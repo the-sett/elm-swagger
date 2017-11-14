@@ -7,9 +7,9 @@
     "./src"
   ],
   "exposed-modules": [
-    "JsonSchema",
-    "JsonSchema.Encoder",
-    "JsonSchema.Decoder"
+    "Swagger",
+    "Swagger.Encoder",
+    "Swagger.Decoder"
   ],
   "dependencies": {
     "elm-lang/core": "5.0.0 <= v < 6.0.0",
