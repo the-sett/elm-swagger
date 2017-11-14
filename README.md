@@ -1,6 +1,12 @@
 # Elm Swagger
 
-Work in progress, the aims are:
+Swagger specifications (now OpenApi 3.0) can be awkward to write correctly by hand. There are graphical tools to aid with this, but there is also a need to be able to construct correct specifications in code, for example, for code generation purposes.
+
+Swagger specs make use of Json Schemas to define the types of data models that an API can pass over the wire. This tool builds on top of [NoRedInk/json-elm-schema](https://github.com/NoRedInk/json-elm-schema), for the Json Schema part, and is written in a style very similar to it. That is, it defines a DSL for building correct Swagger specifications, encoders/decoders for writing/reading Swagger specs as Json, and cli tools for supporting code generation.
+
+# Status
+
+This is work in progress, the aims are:
 
 * DSL for creating Swagger specs in Elm.
 * Encoders/Decoders for Swagger specs.
