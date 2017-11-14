@@ -7,7 +7,7 @@ import Swagger.Encoder exposing (EncoderProgram, encodeSpecProgram)
 
 apiSpec : Spec
 apiSpec =
-    Swagger
+    swagger
 
 
 main : EncoderProgram

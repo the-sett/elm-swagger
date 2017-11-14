@@ -4,7 +4,7 @@
   "description": "Compile Elm Swagger to Swagger definitions.",
   "main": "index.js",
   "bin": {
-    "elm-json-schema": "./index.js"
+    "elm-swagger": "./index.js"
   },
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/the-sett/elm-swagger#readme",
   "dependencies": {
+    "glob": "^7.1.2",
     "meow": "3.7.0",
     "node-elm-compiler": "4.3.0",
     "temp": "0.8.3"
