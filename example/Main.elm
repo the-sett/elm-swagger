@@ -12,7 +12,7 @@ apiSpec =
 
 main : EncoderProgram
 main =
-    encodeSchemaProgram apiSpec emit
+    encodeSpecProgram apiSpec emit
 
 
 port emit : String -> Cmd a

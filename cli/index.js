@@ -15,6 +15,7 @@ if (!fs.existsSync('./elm-package.json')) {
 
 var sourcePath = cli.input[0]
 var targetPath = temp.path({ suffix: '.js' })
+
 compiler.compileSync([sourcePath], {
   yes: true,
   output: targetPath,
