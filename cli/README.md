@@ -1,10 +1,10 @@
-# Elm JSON Schema compiler
+# Elm Swagger compiler
 
-A cli tool for compiling [Elm JSON Schemas](https://github.com/NoRedInk/json-elm-schema) to regular JSON schemas.
+A cli tool for compiling [Elm Swagger](https://github.com/the-sett/elm-swagger) to JSON Swagger specifications.
 
 Usage:
 
 ```sh
-npm install -g elm-json-schema-compiler
-elm-json-schema Main.elm > schema.json
+npm install -g elm-swagger
+elm-swagger Main.elm > swagger.json
 ```
