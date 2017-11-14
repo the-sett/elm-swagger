@@ -46,4 +46,4 @@ encode schema =
 -}
 encodeValue : Spec -> Encode.Value
 encodeValue schema =
-    Encode.string ""
+    Encode.string "swagger spec"
