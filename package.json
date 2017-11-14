@@ -1,0 +1,23 @@
+{
+  "name": "elm-swagger",
+  "version": "0.0.1",
+  "description": "Swagger DSL in Elm",
+  "main": "elm.js",
+  "scripts": {
+    "test": "elm-test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:the-sett/elm-swagger.git"
+  },
+  "author": "",
+  "license": "APACHE2",
+  "bugs": {
+    "url": "https://github.com/the-sett/elm-swagger/issues"
+  },
+  "homepage": "https://github.com/the-sett/elm-swagger#readme",
+  "devDependencies": {
+    "ajv": "^4.11.3",
+    "elm-test": "^0.18.3"
+  }
+}
