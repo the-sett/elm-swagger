@@ -8,7 +8,7 @@ Work in progress, the aims are:
 
 # Running the Swagger Specification cli tool.
 
-This will convert a Swagger specification in the Elm DSL to its normal JSON format. See the example/Main.elm for an example program that outputs a swagger specification suitable for running the cli tool against.
+This will convert a Swagger specification in the Elm DSL to its normal JSON format. See the [example/Main.elm](https://github.com/the-sett/elm-swagger/blob/master/example/Main.elm) for an example program that outputs a swagger specification suitable for running the cli tool against.
 
 (Not yet available - as npm package not published) To install the tool and run it:
 
@@ -17,7 +17,7 @@ npm install -g elm-swagger
 elm-swagger Main.elm > swagger.json
 ```
 
-To install the too and test it locally:
+To install the tool and test it locally:
 
 ```sh
 npm install cli
