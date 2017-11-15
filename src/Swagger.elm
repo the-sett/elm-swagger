@@ -97,3 +97,35 @@ defaultResponse =
     , type_ = Nothing
     , schema = Nothing
     }
+
+
+type alias SpecProperty =
+    Spec -> Spec
+
+
+type alias InfoProperty =
+    Info -> Info
+
+
+type alias PathProperty =
+    Path -> Path
+
+
+type alias PathCommonProperty a =
+    PathCommon a -> PathCommon a
+
+
+type alias PathGetProperty =
+    PathGet -> PathGet
+
+
+type alias PathPostProperty =
+    PathPost -> PathPost
+
+
+type alias ParameterProperty =
+    Parameter -> Parameter
+
+
+type alias ResponseProperty =
+    Response -> Response
