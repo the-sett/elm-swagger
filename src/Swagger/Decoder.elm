@@ -32,8 +32,19 @@ import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, requi
 import Swagger.Model exposing (..)
 
 
+defaultSpec : Spec
+defaultSpec =
+    { swagger = Nothing
+    , info = Nothing
+    , basePath = Nothing
+    , tags = []
+    , path = Dict.empty
+    , definitions = Dict.empty
+    }
+
+
 {-| Decodes a Swagger Spec from json.
 -}
 decoder : Decoder Spec
 decoder =
-    map (\_ -> Swagger) string
+    map (\_ -> defaultSpec) string
