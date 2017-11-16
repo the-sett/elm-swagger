@@ -7,6 +7,24 @@ import Json.Encode as Encode
 import JsonSchema exposing (Schema)
 
 
+{-| Data types used in the spec and mapping to Elm:
+
+    integer  integer int32 signed 32 bits | Int
+    long     integer int64 signed 64 bits | String
+    float    number  float  | Float
+    double   number  double | String
+    string   string  | String
+    byte     string  byte base64 encoded characters | String
+    binary   string  binary any sequence of octets | String
+    boolean  boolean | Bool
+    date     string  date As defined by full-date - RFC3339 | String
+    dateTime string  date-time As defined by date-time - RFC3339 | String
+    password string  password A hint to UIs to obscure input. | String
+
+-}
+
+
+
 -- swagger : "2.0"
 -- openapi : "3.0.0"
 
