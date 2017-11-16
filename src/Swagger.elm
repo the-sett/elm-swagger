@@ -27,12 +27,14 @@ swagger =
 
 defaultSpec : Spec
 defaultSpec =
-    { swagger = Nothing
-    , info = Nothing
-    , basePath = Nothing
-    , tags = []
-    , path = Dict.empty
-    , definitions = Dict.empty
+    { info = Nothing
+    , servers = Nothing
+    , security = Nothing
+    , paths = Nothing
+    , tags = Nothing
+    , externalDocs = Nothing
+    , components = Nothing
+    , ext = Dict.empty
     }
 
 
@@ -49,26 +51,6 @@ defaultInfo =
 
 defaultPath : Path
 defaultPath =
-    { get = Nothing
-    , post = Nothing
-    }
-
-
-defaultPathGet : PathGet
-defaultPathGet =
-    { tags = []
-    , summary = Nothing
-    , description = Nothing
-    , operationId = Nothing
-    , consumes = []
-    , produces = []
-    , parameters = []
-    , responses = Dict.empty
-    }
-
-
-defaultPathPost : PathPost
-defaultPathPost =
     { tags = []
     , summary = Nothing
     , description = Nothing
@@ -109,18 +91,6 @@ type alias InfoProperty =
 
 type alias PathProperty =
     Path -> Path
-
-
-type alias PathCommonProperty a =
-    PathCommon a -> PathCommon a
-
-
-type alias PathGetProperty =
-    PathGet -> PathGet
-
-
-type alias PathPostProperty =
-    PathPost -> PathPost
 
 
 type alias ParameterProperty =

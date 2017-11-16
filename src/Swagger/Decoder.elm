@@ -34,12 +34,14 @@ import Swagger.Model exposing (..)
 
 defaultSpec : Spec
 defaultSpec =
-    { swagger = Nothing
-    , info = Nothing
-    , basePath = Nothing
-    , tags = []
-    , path = Dict.empty
-    , definitions = Dict.empty
+    { info = Nothing
+    , servers = Nothing
+    , security = Nothing
+    , paths = Nothing
+    , tags = Nothing
+    , externalDocs = Nothing
+    , components = Nothing
+    , ext = Dict.empty
     }
 
 
