@@ -189,8 +189,9 @@ type Response
     = ResponseRef Reference
     | ResponseInline
         { description : Maybe String
-        , type_ : Maybe String
-        , schema : Maybe Schema
+        , header : Dict String Header
+        , content : Dict String MediaType
+        , links : Dict String Link
         }
 
 
@@ -272,7 +273,9 @@ type Link
 
 type Callback
     = CallbackRef Reference
-    | CallbackInline {}
+    | CallbackInline
+        { expressions : Dict String PathItem
+        }
 
 
 type SecuritySchema
