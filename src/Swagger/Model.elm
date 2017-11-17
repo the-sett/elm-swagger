@@ -3,7 +3,7 @@ module Swagger.Model exposing (..)
 import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Json.Decode
-import Json.Encode as Encode
+import Json.Encode as Encode exposing (Value)
 import JsonSchema exposing (Schema)
 
 
@@ -251,8 +251,10 @@ type alias Encoding =
 type Example
     = ExampleRef Reference
     | ExampleInline
-        { description : Maybe String
-        , url : Maybe String
+        { summary : Maybe String
+        , description : Maybe String
+        , value : Maybe Value
+        , externalValue : Maybe String
         }
 
 
@@ -268,7 +270,19 @@ type Header
 
 type Link
     = LinkRef Reference
-    | LinkInline {}
+    | LinkInline
+        { operationRef : Maybe String
+        , operationId : Maybe String
+        , parameters : Dict String AnyOrExpression
+        , requestBody : Maybe AnyOrExpression
+        , description : Maybe String
+        , server : Maybe Server
+        }
+
+
+type AnyOrExpression
+    = Any Value
+    | Expression String
 
 
 type Callback
