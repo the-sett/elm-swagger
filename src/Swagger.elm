@@ -28,57 +28,58 @@ swagger =
 defaultSpec : Spec
 defaultSpec =
     { info = Nothing
-    , servers = Nothing
+    , servers = []
     , security = Nothing
-    , paths = Nothing
-    , tags = Nothing
+    , paths = Dict.empty
+    , tags = []
     , externalDocs = Nothing
     , components = Nothing
     , ext = Dict.empty
     }
 
 
-defaultTag : Tag
-defaultTag =
-    { name = Nothing
-    }
 
-
-defaultInfo : Info
-defaultInfo =
-    {}
-
-
-defaultPath : Path
-defaultPath =
-    { tags = []
-    , summary = Nothing
-    , description = Nothing
-    , operationId = Nothing
-    , consumes = []
-    , produces = []
-    , parameters = []
-    , responses = Dict.empty
-    }
-
-
-defaultParameter : Parameter
-defaultParameter =
-    { in_ = Nothing
-    , name = Nothing
-    , description = Nothing
-    , required = Nothing
-    , type_ = Nothing
-    , schema = Nothing
-    }
-
-
-defaultResponse : Response
-defaultResponse =
-    { description = Nothing
-    , type_ = Nothing
-    , schema = Nothing
-    }
+-- defaultTag : Tag
+-- defaultTag =
+--     { name = Nothing
+--     }
+--
+--
+-- defaultInfo : Info
+-- defaultInfo =
+--     {}
+--
+--
+-- defaultPath : PathItem
+-- defaultPath =
+--     { tags = []
+--     , summary = Nothing
+--     , description = Nothing
+--     , operationId = Nothing
+--     , consumes = []
+--     , produces = []
+--     , parameters = []
+--     , responses = Dict.empty
+--     }
+--
+--
+-- defaultParameter : Parameter
+-- defaultParameter =
+--     { in_ = Nothing
+--     , name = Nothing
+--     , description = Nothing
+--     , required = Nothing
+--     , type_ = Nothing
+--     , schema = Nothing
+--     }
+--
+--
+-- defaultResponse : Response
+-- defaultResponse =
+--     { description = Nothing
+--     , type_ = Nothing
+--     , schema = Nothing
+--     }
 
 
 type alias SpecProperty =
@@ -90,7 +91,7 @@ type alias InfoProperty =
 
 
 type alias PathProperty =
-    Path -> Path
+    PathItem -> PathItem
 
 
 type alias ParameterProperty =
