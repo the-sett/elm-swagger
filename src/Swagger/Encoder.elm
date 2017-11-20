@@ -18,6 +18,10 @@ import Json.Encode as Encode
 import Swagger.Model exposing (..)
 
 
+type alias Spec =
+    Swagger.Model.OpenApi
+
+
 {-| Defines the type of programs that generate output over Swagger Specs.
 -}
 type alias EncoderProgram =

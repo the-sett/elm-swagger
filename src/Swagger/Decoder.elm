@@ -32,6 +32,10 @@ import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, requi
 import Swagger.Model exposing (..)
 
 
+type alias Spec =
+    Swagger.Model.OpenApi
+
+
 defaultSpec : Spec
 defaultSpec =
     { info = Nothing

@@ -15,7 +15,7 @@ import JsonSchema exposing (Schema)
 {-| The type of Swagger Specs.
 -}
 type alias Spec =
-    Swagger.Model.Spec
+    Swagger.Model.OpenApi
 
 
 {-| A dummay swagger spec.

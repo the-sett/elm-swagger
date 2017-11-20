@@ -4,7 +4,7 @@ import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Json.Decode
 import Json.Encode as Encode exposing (Value)
-import JsonSchema exposing (Schema)
+import JsonSchema
 
 
 {-| Data types used in the spec and mapping to Elm:
@@ -39,10 +39,10 @@ type alias Reference =
     }
 
 
-type alias Spec =
+type alias OpenApi =
     { info : Maybe Info
     , servers : List Server
-    , security : Maybe Security
+    , security : Maybe SecurityRequirement
     , paths : Dict String PathItem
     , tags : List Tag
     , externalDocs : Maybe ExternalDocs
@@ -98,11 +98,12 @@ type alias ServerVariable =
 
 
 
--- ======== Security Section ========
+-- ======== SecurityRequirement Section ========
 
 
-type alias Security =
-    {}
+type alias SecurityRequirement =
+    { schemes : Dict String (List String)
+    }
 
 
 
@@ -152,6 +153,8 @@ type alias Operation =
 
 type alias Tag =
     { name : Maybe String
+    , description : Maybe String
+    , externalDocs : Maybe ExternalDocs
     }
 
 
@@ -160,7 +163,9 @@ type alias Tag =
 
 
 type alias ExternalDocs =
-    {}
+    { description : Maybe String
+    , url : Maybe String
+    }
 
 
 
@@ -176,13 +181,38 @@ type alias Components =
     , headers : Dict String Header
     , links : Dict String Link
     , callbacks : Dict String Callback
-    , securitySchemas : Dict String SecuritySchema
+    , securitySchemes : Dict String SecurityScheme
     }
 
 
 type Schema
     = SchemaRef Reference
-    | SchemaInline {}
+    | SchemaInline
+        { schema : JsonSchema.Schema
+        , nullable : Maybe Bool
+        , discriminator : Maybe Discriminator
+        , readOnly : Maybe Bool
+        , writeOnly : Maybe Bool
+        , xml : Maybe Xml
+        , externalDocs : Maybe ExternalDocs
+        , example : Maybe Value
+        , deprecated : Maybe Bool
+        }
+
+
+type alias Discriminator =
+    { propertyName : Maybe String
+    , mapping : Dict String String
+    }
+
+
+type alias Xml =
+    { name : Maybe String
+    , namespace : Maybe String
+    , prefix : Maybe String
+    , attribute : Maybe Bool
+    , wrapped : Maybe Bool
+    }
 
 
 type Response
@@ -217,6 +247,8 @@ type Parameter
     | ParameterInline
         { name : Maybe String
         , in_ : Maybe ParamIn
+
+        -- Sane as Header from here on - merge the two?
         , description : Maybe String
         , required : Maybe Bool
         , deprecated : Maybe Bool
@@ -260,12 +292,28 @@ type Example
 
 type RequestBody
     = RequestBodyRef Reference
-    | RequestBodyInline {}
+    | RequestBodyInline
+        { description : Maybe String
+        , content : Dict String MediaType
+        , required : Maybe Bool
+        }
 
 
 type Header
     = HeaderRef Reference
-    | HeaderInline {}
+    | HeaderInline
+        { description : Maybe String
+        , required : Maybe Bool
+        , deprecated : Maybe Bool
+        , allowEmptyValue : Maybe Bool
+        , style : Maybe Style
+        , explode : Maybe Bool
+        , allowReserved : Maybe Bool
+        , schema : Maybe Schema
+        , example : Maybe String
+        , examples : Dict String Example
+        , content : Dict String MediaType
+        }
 
 
 type Link
@@ -292,17 +340,37 @@ type Callback
         }
 
 
-type SecuritySchema
-    = SecuritySchemaRef Reference
-    | SecuritySchemaInline
-        { userSecurity : Maybe UserSecurity
-        , apiKey : Maybe APIKey
+type SecurityTokenIn
+    = QueryToken
+    | HeaderToken
+    | CookieToken
+
+
+type SecurityScheme
+    = SecuritySchemeRef Reference
+    | SecuritySchemeInline
+        { type_ : Maybe String
+        , description : Maybe String
+        , name : Maybe String
+        , in_ : Maybe SecurityTokenIn
+        , scheme : Maybe String
+        , bearerFormat : Maybe String
+        , flows : Maybe OAuthFlows
+        , openIdConnectUrl : Maybe String
         }
 
 
-type alias UserSecurity =
-    {}
+type alias OAuthFlows =
+    { implicit : Maybe OAuthFlow
+    , password : Maybe OAuthFlow
+    , clientCredentials : Maybe OAuthFlow
+    , authorizationCode : Maybe OAuthFlow
+    }
 
 
-type alias APIKey =
-    {}
+type alias OAuthFlow =
+    { authorizationUrl : Maybe String
+    , tokenUrl : Maybe String
+    , refreshUrl : Maybe String
+    , scopes : Dict String String
+    }
