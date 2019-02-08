@@ -28,7 +28,7 @@ import Json.Decode
         , succeed
         , value
         )
-import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, required)
+import Json.Decode.Pipeline exposing (custom, hardcoded, optional, required)
 import Swagger.Model exposing (..)
 
 
