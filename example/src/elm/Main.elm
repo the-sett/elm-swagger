@@ -166,7 +166,7 @@ global =
 -}
 view : Model -> Browser.Document Msg
 view model =
-    { title = "Auth Elm Example"
+    { title = "Swagger Example"
     , body = [ body model ]
     }
 
