@@ -1,0 +1,41 @@
+{
+    "type": "application",
+    "source-directories": [
+        "../src/",
+        "src/elm"
+    ],
+    "elm-version": "0.19.0",
+    "dependencies": {
+        "direct": {
+            "elm/browser": "1.0.1",
+            "elm/core": "1.0.0",
+            "elm/html": "1.0.0",
+            "elm/http": "1.0.0",
+            "elm/json": "1.1.2",
+            "elm/time": "1.0.0",
+            "elm-community/json-extra": "4.0.0",
+            "elm-community/maybe-extra": "5.0.0",
+            "rtfeldman/elm-css": "15.1.0",
+            "the-sett/elm-state-machines": "1.0.1",
+            "the-sett/elm-update-helper": "1.4.1",
+            "the-sett/the-sett-laf": "6.0.0",
+            "truqu/elm-base64": "2.0.4"
+        },
+        "indirect": {
+            "Skinney/murmur3": "2.0.8",
+            "avh4/elm-color": "1.0.0",
+            "elm/parser": "1.1.0",
+            "elm/regex": "1.0.0",
+            "elm/svg": "1.0.1",
+            "elm/url": "1.0.0",
+            "elm/virtual-dom": "1.0.2",
+            "elm-community/typed-svg": "5.0.0",
+            "rtfeldman/elm-hex": "1.0.0",
+            "rtfeldman/elm-iso8601-date-strings": "1.1.2"
+        }
+    },
+    "test-dependencies": {
+        "direct": {},
+        "indirect": {}
+    }
+}
