@@ -3,7 +3,7 @@ module Swagger.Model exposing (AnyOrExpression(..), Callback(..), Components, Co
 import Dict exposing (Dict)
 import Json.Decode
 import Json.Encode as Encode exposing (Value)
-import JsonSchema
+import Json.Schema.Definitions exposing (Schema)
 
 
 
@@ -246,7 +246,7 @@ type Response
 type Schema
     = SchemaRef Reference
     | SchemaInline
-        { schema : JsonSchema.Schema
+        { schema : Schema
         , nullable : Maybe Bool
         , discriminator : Maybe Discriminator
         , readOnly : Maybe Bool
