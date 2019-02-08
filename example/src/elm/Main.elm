@@ -16,6 +16,7 @@ import Html
 import Html.Styled exposing (div, form, h4, img, label, span, styled, text, toUnstyled)
 import Html.Styled.Attributes exposing (for, name, src)
 import Html.Styled.Events exposing (onClick, onInput)
+import LoadSwagger
 import Process
 import Responsive
 import Styles exposing (lg, md, sm, xl)
