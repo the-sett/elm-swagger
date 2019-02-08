@@ -1,4 +1,4 @@
-module Swagger.RuntimeExpression exposing (..)
+module Swagger.RuntimeExpression exposing (Expression(..), RequestExp(..), ResponseExp(..))
 
 {-| The spec describes RuntimeExpressions, which are schemas describing callbacks and links.
 

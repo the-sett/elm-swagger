@@ -1,10 +1,4 @@
-module Swagger.Encoder
-    exposing
-        ( EncoderProgram
-        , encode
-        , encodeSpecProgram
-        , encodeValue
-        )
+module Swagger.Encoder exposing (EncoderProgram, encode, encodeSpecProgram, encodeValue)
 
 {-| Encoders for Swagger Specs.
 

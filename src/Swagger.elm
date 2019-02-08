@@ -8,8 +8,8 @@ module Swagger exposing (Spec, swagger)
 
 import Dict exposing (Dict)
 import Json.Encode as Encode
-import Swagger.Model exposing (..)
 import JsonSchema exposing (Schema)
+import Swagger.Model exposing (..)
 
 
 {-| The type of Swagger Specs.

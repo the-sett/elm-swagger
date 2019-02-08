@@ -1,8 +1,8 @@
-module Swagger.SchemaBuilder exposing (..)
+module Swagger.SchemaBuilder exposing (Builder)
 
-import JsonSchema exposing (Schema)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
+import JsonSchema exposing (Schema)
 
 
 type alias Builder a =

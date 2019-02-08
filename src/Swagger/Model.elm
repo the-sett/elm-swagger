@@ -1,10 +1,11 @@
-module Swagger.Model exposing (..)
+module Swagger.Model exposing (AnyOrExpression(..), Callback(..), Components, Contact, Discriminator, Encoding, Example(..), ExternalDocs, Header(..), HttpVerb(..), Info, License, Link(..), MediaType, OAuthFlow, OAuthFlows, OpenApi, Operation, ParamIn(..), Parameter(..), PathItem, Reference, RequestBody(..), Response(..), Schema(..), SecurityRequirement, SecurityScheme(..), SecurityTokenIn(..), Server, ServerVariable, Style(..), Tag, Version(..), Xml)
 
 import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Json.Decode
 import Json.Encode as Encode exposing (Value)
 import JsonSchema
+
 
 
 {- The type definitions below are in alphabetical order to aid findin them. -}
