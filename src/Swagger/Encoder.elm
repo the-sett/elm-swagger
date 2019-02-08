@@ -26,8 +26,8 @@ type alias EncoderProgram =
 -}
 encodeSpecProgram : Spec -> (String -> Cmd ()) -> EncoderProgram
 encodeSpecProgram schema emit =
-    Platform.program
-        { init = ( (), emit (encode schema) )
+    Platform.worker
+        { init = \_ -> ( (), emit (encode schema) )
         , update = \_ _ -> ( (), Cmd.none )
         , subscriptions = \_ -> Sub.none
         }
