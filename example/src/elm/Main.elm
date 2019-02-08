@@ -26,7 +26,6 @@ import TheSett.Debug
 import TheSett.Laf as Laf exposing (devices, fonts, responsiveMeta, wrapper)
 import TheSett.Textfield as Textfield
 import Update3
-import ViewUtils
 
 
 {-| The content editor program model.
