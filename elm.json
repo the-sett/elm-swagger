@@ -2,7 +2,7 @@
     "type": "package",
     "name": "the-sett/elm-swagger",
     "summary": "Write Swagger API schemas in Elm.",
-    "license": "APACHE2",
+    "license": "BSD-3-Clause",
     "version": "0.0.1",
     "exposed-modules": [
         "Swagger",
@@ -11,9 +11,7 @@
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {
-        "elm/core": "1.0.0 <= v < 2.0.0",
-        "eeue56/elm-all-dict": "2.0.1 <= v < 3.0.0",
-        "NoRedInk/json-elm-schema": "2.2.0 <= v < 3.0.0"
+        "elm/core": "1.0.0 <= v < 2.0.0"
     },
     "test-dependencies": {}
 }
