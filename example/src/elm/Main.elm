@@ -80,12 +80,13 @@ init _ =
             Auth.init
                 { authApiRoot = config.authRoot
                 }
-      , session = Initial
+      , session = LoggedIn { scopes = [], subject = "alice" }
       , username = ""
       , password = ""
       , debugStyle = False
       }
-    , Process.sleep 1000 |> Task.perform (always InitialTimeout)
+    , Cmd.none
+      -- Process.sleep 1000 |> Task.perform (always InitialTimeout)
     )
 
 
