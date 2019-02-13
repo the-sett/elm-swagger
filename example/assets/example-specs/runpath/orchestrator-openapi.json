@@ -1,0 +1,6500 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "A service to connect Verdus to financial data sources\r\n# About\r\nThe Orchestrator service exposes an extremely simple API for connecting a user’s accounts and data from a third-party provider (e.g. their Bank) with their representative OwnedItem in the Holdings database.\r\n\r\nDespite the simplicity of the exposed API, a complex workflow is actually executing under-the-hood:\r\n\r\n* Acquisition of authentication tokens or direct authentication with the Third-Party Providers \r\n* Secure storage of Credentials in Runpath’s secure Credentials Store.\r\n* Querying third party providers to discover accounts\r\n* Connecting Accounts with Holdings Owned Items\r\n* Downloading transactions from the third-party  account and storing them alongside the respective OwnedItem in Holdings\r\n* Establishing a synchronisation schedule which will periodically download new Transactions from the Third-Party Provider.\r\n\r\nIt is the Orchestrator’s job to orchestrate this workflow, while exposing to our Partners a very simple API comprising two key endpoints: Discover and Connect.\r\n\r\n\r\n\r\n# Authentication\r\nTo utilise the Orchestrator Service, a bearer token must be issued along with the request.  \r\n\r\nDetails on how to obtain a bearer token, and how to utilise it as part of the request are detailed in the [Runpath Platform Authentication Guide](/document/PlatformAuthentication).\r\nTo obtain an access token, follow the instructions in the Platform Authentication guide and add the following scopes:  \r\n<br/>\r\nScopes   | \r\n------------- | \r\norchestrator.read |\t\r\norchestrator.readwrite |\t\r\n",
+    "title": "Runpath.Orchestrator",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://cat.orchestrator.runpath.com/"
+    }
+  ],
+  "paths": {
+    "/banks/preauthorise": {
+      "post": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "response": {
+                    "value": {
+                      "authorizationUrl": "https://loremidentity.runpath.com/connect/authorize?client_id=openIdConnectClient&state=MGM0MjU5YWRh..."
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PreAuthoriseResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreAuthoriseResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "description": "BadRequest"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Unable to contact the bank."
+          }
+        },
+        "tags": [
+          "Banks"
+        ],
+        "operationId": "Banks_PreAuthorise",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreAuthoriseRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreAuthoriseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "summary": "Prepare an Open Banking account request"
+      }
+    },
+    "/banks/support": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "response": {
+                    "value": [
+                      {
+                        "directAccessProviderId": 6985,
+                        "imageUrl": "https://runpathstorage.blob.core.windows.net/images/providers/2097.132x83.png",
+                        "isDirectAccess": true,
+                        "isOpenBanking": true,
+                        "name": "Barclays",
+                        "providerId": 698756
+                      }
+                    ]
+                  }
+                },
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BankProvider"
+                  },
+                  "type": "array"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BankProvider"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Banks"
+        ],
+        "operationId": "Banks_Get",
+        "summary": "Reference details for supported bank connections"
+      }
+    },
+    "/banks/support/{softwareId}": {
+      "get": {
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "softwareId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BankProvider"
+                  },
+                  "type": "array"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BankProvider"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Banks"
+        ],
+        "operationId": "Banks_GetBySoftwareId",
+        "summary": "Reference details for supported bank connections for the given softwareId"
+      }
+    },
+    "/connections": {
+      "post": {
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "response": {
+                    "value": {
+                      "channel": "OpenBanking",
+                      "consentId": 569856,
+                      "discoverId": "f0cad91e-37ab-4ef4-a7a8-7db2fe261b84",
+                      "itemId": "656958523",
+                      "ownedItemId": 6655452,
+                      "schedule": "Daily",
+                      "scope": "transactions",
+                      "state": "Active"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "description": "BadRequest"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "NotFound"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "Connections_Create",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Connection"
+        },
+        "summary": "Connect to an item from a discover request"
+      }
+    },
+    "/connections/{connectionId}": {
+      "delete": {
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "204": {
+            "description": "NoContent"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "Connections_Delete",
+        "summary": "Delete a connection"
+      },
+      "get": {
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "response": {
+                    "value": {
+                      "channel": "OpenBanking",
+                      "consentId": 569856,
+                      "discoverId": "b23bc3db-3a30-45d9-af5d-13cf18157bf7",
+                      "itemId": "656958523",
+                      "ownedItemId": 6655452,
+                      "schedule": "Daily",
+                      "scope": "transactions",
+                      "state": "Active"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Connection"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "Connections_GetById",
+        "summary": "Get a connection by unique id"
+      },
+      "put": {
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "204": {
+            "description": "NoContent"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "Connections_Update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Connection"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Connection"
+              }
+            }
+          },
+          "required": true
+        },
+        "summary": "Update a connection"
+      }
+    },
+    "/connections/{connectionId}/refresh": {
+      "post": {
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "connectionId",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "204": {
+            "description": "NoContent"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "Connections_Refresh",
+        "summary": "Refresh a connection"
+      }
+    },
+    "/discover/{partyId}": {
+      "post": {
+        "parameters": [
+          {
+            "description": "The unique Id of the person",
+            "in": "path",
+            "name": "partyId",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "response": {
+                    "value": {
+                      "connections": [
+                        {
+                          "channel": "OpenBanking",
+                          "consentId": 569856,
+                          "discoverId": "39c43ad0-0bbd-446e-950a-f65581b96cca",
+                          "itemId": "656958523",
+                          "ownedItemId": 6655452,
+                          "schedule": "Daily",
+                          "scope": "transactions",
+                          "state": "Active"
+                        }
+                      ],
+                      "consent": {
+                        "date": "2018-10-10T22:10:46.2676706+00:00",
+                        "duration": "Transaction",
+                        "expirationDate": "2019-01-08T22:10:46.2676706+00:00",
+                        "externalId": "87asfa798a7dsf7asydf",
+                        "id": 21345,
+                        "mechanism": "Web",
+                        "participants": [
+                          {
+                            "assetIdentifiers": [
+                              {
+                                "name": "AccountId",
+                                "value": "7236492364"
+                              }
+                            ],
+                            "name": "Lorem",
+                            "type": "DataProvider"
+                          }
+                        ],
+                        "partyId": 1234,
+                        "serviceId": 0,
+                        "status": "Active"
+                      },
+                      "discoverId": "2680e116-2958-45ec-99eb-8272fae17382",
+                      "httpStatusCode": 0,
+                      "items": [
+                        {
+                          "accountReference": "25422633",
+                          "friendlyName": "My Current Account",
+                          "itemId": "656958523",
+                          "itemType": "BankAccount",
+                          "offeringId": 1000057,
+                          "offeringTypeId": 30029,
+                          "offeringTypeName": "Current Account",
+                          "productName": "Everyday Platinum Current Account",
+                          "providerId": 1000027,
+                          "providerName": "Barclays",
+                          "value": 1230.69
+                        }
+                      ],
+                      "ownedItems": [
+                        {
+                          "$type": "BankAccount",
+                          "friendlyName": "Everyday Saver",
+                          "id": 810473,
+                          "interestedParties": [
+                            {
+                              "$type": "Owner",
+                              "partyId": 1234
+                            }
+                          ],
+                          "itemValidDate": "2018-10-05T22:10:46.2676706Z",
+                          "marketsName": "Platinum Current Account",
+                          "offeringType": "Current Account",
+                          "value": 1230.54
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoverResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoverResponse"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "description": "BadRequest"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "NotFound"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Cannot contact the bank."
+          }
+        },
+        "tags": [
+          "Discover"
+        ],
+        "operationId": "Discover_ItemsForPerson",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscoverRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DiscoverRequest"
+              }
+            }
+          },
+          "description": "DiscoverItemsForPerson connection details",
+          "required": true
+        },
+        "summary": "DiscoverItemsForPerson items related to a person"
+      }
+    },
+    "/owneditems/{ownedItemId}/enhance": {
+      "post": {
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "ownedItemId",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "204": {
+            "description": "NoContent"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "OwnedItems"
+        ],
+        "operationId": "OwnedItems_Enhance",
+        "summary": "Enchance an owneditem."
+      }
+    },
+    "/owneditems/{ownedItemdId}/ownership/{partyId}": {
+      "post": {
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "ownedItemdId",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "",
+            "in": "path",
+            "name": "partyId",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "204": {
+            "description": "NoContent"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "OwnedItems"
+        ],
+        "operationId": "OwnedItems_VerifyOwnedItemOwnership",
+        "summary": "Queries Bank Wizard Absolute to determine if an Owned Item belongs to a Party"
+      }
+    },
+    "/persons/{personId}/enhance": {
+      "post": {
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "personId",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "204": {
+            "description": "NoContent"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Persons"
+        ],
+        "operationId": "Persons_Enhance",
+        "summary": "Enchance a person."
+      }
+    },
+    "/positions/parties/{partyId}": {
+      "get": {
+        "parameters": [
+          {
+            "description": "",
+            "in": "path",
+            "name": "partyId",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "examples": {
+                  "response": {
+                    "value": {
+                      "connections": [
+                        {
+                          "channel": "OpenBanking",
+                          "consentId": 569856,
+                          "discoverId": "9a7aebad-2e00-4d05-8f11-c6922bf60cba",
+                          "itemId": "656958523",
+                          "ownedItemId": 6655452,
+                          "schedule": "Daily",
+                          "scope": "transactions",
+                          "state": "Active"
+                        }
+                      ],
+                      "consents": [
+                        {
+                          "date": "2018-10-10T22:10:46.2832965+00:00",
+                          "duration": "Transaction",
+                          "expirationDate": "2019-01-08T22:10:46.2832965+00:00",
+                          "externalId": "87asfa798a7dsf7asydf",
+                          "id": 21345,
+                          "mechanism": "Web",
+                          "participants": [
+                            {
+                              "assetIdentifiers": [
+                                {
+                                  "name": "AccountId",
+                                  "value": "7236492364"
+                                }
+                              ],
+                              "name": "Lorem",
+                              "type": "DataProvider"
+                            }
+                          ],
+                          "partyId": 1234,
+                          "serviceId": 0,
+                          "status": "Active"
+                        }
+                      ],
+                      "ownedItems": [
+                        {
+                          "$type": "BankAccount",
+                          "friendlyName": "Everyday Saver",
+                          "id": 810473,
+                          "interestedParties": [
+                            {
+                              "$type": "Owner",
+                              "partyId": 1234
+                            }
+                          ],
+                          "itemValidDate": "2018-10-05T22:10:46.2832965Z",
+                          "marketsName": "Platinum Current Account",
+                          "offeringType": "Current Account",
+                          "value": 1230.54
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/Position"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Position"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Positions"
+        ],
+        "operationId": "Positions_GetPositionForPerson",
+        "summary": "Get the overall position for a person"
+      }
+    }
+  },
+  "components": {
+    "requestBodies": {
+      "Connection": {
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Connection"
+            }
+          },
+          "text/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Connection"
+            }
+          }
+        },
+        "required": true
+      }
+    },
+    "schemas": {
+      "Address": {
+        "properties": {
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "county": {
+            "type": "string"
+          },
+          "durationMonths": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "flat": {
+            "type": "string"
+          },
+          "houseName": {
+            "type": "string"
+          },
+          "houseNumber": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "isDefault": {
+            "type": "boolean"
+          },
+          "itemValidDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "itemValidMethod": {
+            "type": "string"
+          },
+          "line1": {
+            "type": "string"
+          },
+          "line2": {
+            "type": "string"
+          },
+          "postcode": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "startDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "streetName": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AssetIdentifiers": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AuthorizeRequestParameters": {
+        "properties": {
+          "query": {
+            "type": "string"
+          },
+          "session": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Balance": {
+        "properties": {
+          "balanceType": {
+            "type": "string"
+          },
+          "value": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "BankAccount": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountClosedDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "balances": {
+                "items": {
+                  "$ref": "#/components/schemas/Balance"
+                },
+                "type": "array"
+              },
+              "branchName": {
+                "type": "string"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "creditHistories": {
+                "items": {
+                  "$ref": "#/components/schemas/CreditHistory"
+                },
+                "type": "array"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "iban": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "incomes": {
+                "items": {
+                  "$ref": "#/components/schemas/Income"
+                },
+                "type": "array"
+              },
+              "interestBasis": {
+                "type": "string"
+              },
+              "interestRate": {
+                "format": "double",
+                "type": "number"
+              },
+              "interestRateExpiryDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isJoint": {
+                "type": "boolean"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "noticePeriodDays": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "overdraftLimit": {
+                "format": "double",
+                "type": "number"
+              },
+              "ownershipMatch": {
+                "type": "boolean"
+              },
+              "ownershipMatchScore": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "rates": {
+                "items": {
+                  "$ref": "#/components/schemas/Rate"
+                },
+                "type": "array"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "sortCode": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "taxStatus": {
+                "type": "string"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "BankProvider": {
+        "properties": {
+          "directAccessProviderId": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "imageUrl": {
+            "type": "string"
+          },
+          "isDirectAccess": {
+            "type": "boolean"
+          },
+          "isOpenBanking": {
+            "type": "boolean"
+          },
+          "isOpenBankingEnabled": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "providerId": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Beneficiary": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InterestedParty"
+          },
+          {
+            "properties": {
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "partyId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "proportion": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Connection": {
+        "description": "The connection object",
+        "example": {
+          "channel": "OpenBanking",
+          "consentId": 569856,
+          "discoverId": "b925f581-6d09-4b96-bfcc-9dbdf99a25c6",
+          "itemId": "656958523",
+          "ownedItemId": 6655452,
+          "schedule": "Daily",
+          "scope": "transactions",
+          "state": "Active"
+        },
+        "properties": {
+          "channel": {
+            "description": "Channel of connection",
+            "enum": [
+              "OpenBanking",
+              "Agency",
+              "DirectAccess"
+            ],
+            "type": "string"
+          },
+          "consentId": {
+            "description": "Unique identifier of the consent",
+            "format": "int32",
+            "type": "integer"
+          },
+          "createdDate": {
+            "description": "The date and time the connection was created.",
+            "example": "2018-10-10T22:10:46.2520452+00:00",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "discoverId": {
+            "description": "Unique identifier for discover",
+            "example": "00000000-0000-0000-0000-000000000000",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "description": "Unique identifier of connection",
+            "format": "int32",
+            "type": "integer"
+          },
+          "itemId": {
+            "description": "",
+            "maxLength": 150,
+            "minLength": 0,
+            "type": "string"
+          },
+          "lastRun": {
+            "description": "The date and time this connection was last run.",
+            "example": "2018-10-10T22:10:46.2520452+00:00",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "nextRun": {
+            "description": "The date and time this connection is due to run again.",
+            "example": "2018-10-10T22:10:46.2520452+00:00",
+            "format": "date-time",
+            "readOnly": true,
+            "type": "string"
+          },
+          "ownedItemId": {
+            "description": "Unique identifier of the ownedItem",
+            "format": "int32",
+            "type": "integer"
+          },
+          "schedule": {
+            "description": "Frequency of the connection",
+            "enum": [
+              "Once",
+              "OnDemand",
+              "QuarterDaily",
+              "Daily",
+              "Weekly",
+              "Monthly"
+            ],
+            "type": "string"
+          },
+          "scope": {
+            "description": "Scope of the connection",
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "softwareId": {
+            "description": "Id of the software this connections is for.",
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "state": {
+            "description": "The state of the connection",
+            "enum": [
+              "Active",
+              "Revoked",
+              "Disabled"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel",
+          "discoverId",
+          "itemId",
+          "ownedItemId",
+          "schedule"
+        ],
+        "type": "object"
+      },
+      "Consent": {
+        "properties": {
+          "date": {
+            "example": "2018-10-10T22:10:46.2520452+00:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "duration": {
+            "type": "string"
+          },
+          "expirationDate": {
+            "example": "2018-10-10T22:10:46.2520452+00:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "mechanism": {
+            "type": "string"
+          },
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/Participants"
+            },
+            "type": "array"
+          },
+          "partyId": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "serviceId": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CreditCard": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "apr": {
+                "format": "double",
+                "type": "number"
+              },
+              "association": {
+                "type": "string"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "creditHistories": {
+                "items": {
+                  "$ref": "#/components/schemas/CreditHistory"
+                },
+                "type": "array"
+              },
+              "creditLimitAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "creditLimitHistories": {
+                "items": {
+                  "$ref": "#/components/schemas/CreditLimitHistory"
+                },
+                "type": "array"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "initialRate": {
+                "format": "double",
+                "type": "number"
+              },
+              "initialRateExpiryDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "interestBasis": {
+                "type": "string"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "rates": {
+                "items": {
+                  "$ref": "#/components/schemas/Rate"
+                },
+                "type": "array"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "CreditHistory": {
+        "properties": {
+          "balance": {
+            "format": "double",
+            "type": "number"
+          },
+          "cashAdvanceAmountInMonth": {
+            "format": "double",
+            "type": "number"
+          },
+          "cashAdvancesInMonth": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "isPromotionalPeriod": {
+            "type": "boolean"
+          },
+          "itemValidDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "itemValidMethod": {
+            "type": "string"
+          },
+          "paymentAmount": {
+            "format": "double",
+            "type": "number"
+          },
+          "paymentAmountPrevious": {
+            "format": "double",
+            "type": "number"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CreditLimitHistory": {
+        "properties": {
+          "amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "CustomEquity": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "customCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "numberOfShares": {
+                "format": "double",
+                "type": "number"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "priceDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "purchasePrice": {
+                "format": "double",
+                "type": "number"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "saleDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "sharesCurrentDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              },
+              "valuePrice": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "CustomFund": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedFund"
+          },
+          {
+            "properties": {
+              "currencyCode": {
+                "type": "string"
+              },
+              "customCode": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "name": {
+                "type": "string"
+              },
+              "notes": {
+                "type": "string"
+              },
+              "originalValue": {
+                "format": "double",
+                "type": "number"
+              },
+              "priceDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "purchaseDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "purchasePrice": {
+                "format": "double",
+                "type": "number"
+              },
+              "quantity": {
+                "format": "double",
+                "type": "number"
+              },
+              "unitsCurrentDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              },
+              "valuePrice": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "DiscoverRequest": {
+        "description": "Request to find acccount from providers",
+        "example": {
+          "parameters": {
+            "authCode": "10c4ea3db2faXXXXXXXXXXXXXXXXXXXXXX",
+            "idToken": "eyplxlOBeZQQYbJ0NiJ9.eyJ1cIJ0Ni6IjIifX0...",
+            "providerAccountId": 0,
+            "state": "af0ifjsldkj"
+          },
+          "behaviour": "DiscoverOnly",
+          "channel": "OpenBanking",
+          "providerId": 1000027
+        },
+        "properties": {
+          "parameters": {
+            "$ref": "#/components/schemas/DiscoverRequestParameters",
+            "description": "Parameters needed for to access channel such as authentication credentials"
+          },
+          "behaviour": {
+            "description": "Behaviour of the discover request",
+            "enum": [
+              "DiscoverOnly",
+              "ConnectOnce",
+              "ConnectRegular"
+            ],
+            "type": "string"
+          },
+          "channel": {
+            "description": "Channel used for discover",
+            "enum": [
+              "OpenBanking",
+              "Agency",
+              "DirectAccess"
+            ],
+            "type": "string"
+          },
+          "itemTypes": {
+            "description": "Provide an exhaustive array of item types that should be discovered. Item Types not present will be ignored. Leave empty to get all item types. You must specify either ItemTypes or OfferingTypeIds.",
+            "items": {
+              "enum": [
+                "BankAccount",
+                "CreditCard",
+                "Insurance",
+                "Loan",
+                "Mortgage",
+                "Protection",
+                "Utility"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "offeringTypeIds": {
+            "description": "Provide an exhaustive array of offering type ids that should be discovered. You must specify either ItemTypes or OfferingTypeIds.",
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "providerId": {
+            "description": "Provider to discover from",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "behaviour",
+          "channel",
+          "parameters"
+        ],
+        "type": "object"
+      },
+      "DiscoverRequestParameters": {
+        "description": "Additional paramters for the discover request",
+        "properties": {
+          "authCode": {
+            "description": "Authorization code to exchange for access token",
+            "type": "string"
+          },
+          "idToken": {
+            "description": "Id Token",
+            "type": "string"
+          },
+          "providerAccountId": {
+            "description": "ProviderAccountId",
+            "format": "int32",
+            "type": "integer"
+          },
+          "state": {
+            "description": "State",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DiscoverResponse": {
+        "description": "Discover response object",
+        "properties": {
+          "connections": {
+            "description": "List of connections associated with this discover",
+            "items": {
+              "$ref": "#/components/schemas/Connection"
+            },
+            "type": "array"
+          },
+          "consent": {
+            "$ref": "#/components/schemas/Consent",
+            "description": "Consent object associated with this discover"
+          },
+          "discoverId": {
+            "description": "Unique identifier for the discover",
+            "example": "00000000-0000-0000-0000-000000000000",
+            "format": "uuid",
+            "type": "string"
+          },
+          "httpStatusCode": {
+            "description": "Status code returned by Discover",
+            "enum": [
+              "Continue",
+              "SwitchingProtocols",
+              "OK",
+              "Created",
+              "Accepted",
+              "NonAuthoritativeInformation",
+              "NoContent",
+              "ResetContent",
+              "PartialContent",
+              "MultipleChoices",
+              "Ambiguous",
+              "MovedPermanently",
+              "Moved",
+              "Found",
+              "Redirect",
+              "SeeOther",
+              "RedirectMethod",
+              "NotModified",
+              "UseProxy",
+              "Unused",
+              "TemporaryRedirect",
+              "RedirectKeepVerb",
+              "BadRequest",
+              "Unauthorized",
+              "PaymentRequired",
+              "Forbidden",
+              "NotFound",
+              "MethodNotAllowed",
+              "NotAcceptable",
+              "ProxyAuthenticationRequired",
+              "RequestTimeout",
+              "Conflict",
+              "Gone",
+              "LengthRequired",
+              "PreconditionFailed",
+              "RequestEntityTooLarge",
+              "RequestUriTooLong",
+              "UnsupportedMediaType",
+              "RequestedRangeNotSatisfiable",
+              "ExpectationFailed",
+              "UpgradeRequired",
+              "InternalServerError",
+              "NotImplemented",
+              "BadGateway",
+              "ServiceUnavailable",
+              "GatewayTimeout",
+              "HttpVersionNotSupported"
+            ],
+            "type": "string"
+          },
+          "items": {
+            "description": "",
+            "items": {
+              "$ref": "#/components/schemas/DiscoverResponseItem"
+            },
+            "type": "array"
+          },
+          "ownedItems": {
+            "description": "List of owned items associated with this discover",
+            "items": {
+              "$ref": "#/components/schemas/OwnedItem"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "DiscoverResponseItem": {
+        "description": "",
+        "properties": {
+          "accountReference": {
+            "description": "",
+            "type": "string"
+          },
+          "friendlyName": {
+            "description": "",
+            "type": "string"
+          },
+          "itemId": {
+            "description": "",
+            "type": "string"
+          },
+          "itemType": {
+            "description": "",
+            "enum": [
+              "BankAccount",
+              "CreditCard",
+              "Insurance",
+              "Loan",
+              "Mortgage",
+              "Protection",
+              "Utility"
+            ],
+            "type": "string"
+          },
+          "offeringId": {
+            "description": "",
+            "format": "int32",
+            "type": "integer"
+          },
+          "offeringTypeId": {
+            "description": "",
+            "format": "int32",
+            "type": "integer"
+          },
+          "offeringTypeName": {
+            "description": "",
+            "type": "string"
+          },
+          "productName": {
+            "description": "",
+            "type": "string"
+          },
+          "providerId": {
+            "description": "Id of provider",
+            "format": "int32",
+            "type": "integer"
+          },
+          "providerName": {
+            "description": "Name of the provider",
+            "type": "string"
+          },
+          "status": {
+            "description": "",
+            "type": "string"
+          },
+          "value": {
+            "description": "",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "Exclusion": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Fee": {
+        "properties": {
+          "amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "amountFrequency": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "modelCode": {
+            "type": "string"
+          },
+          "percent": {
+            "format": "double",
+            "type": "number"
+          },
+          "percentFrequency": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "GeneralInformation": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "endDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "reviewDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Income": {
+        "discriminator": {
+          "propertyName": "$type"
+        },
+        "properties": {
+          "$type": {
+            "type": "string"
+          },
+          "amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "date": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "$type"
+        ],
+        "type": "object"
+      },
+      "Insurance": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "ceasedDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "creditHistories": {
+                "items": {
+                  "$ref": "#/components/schemas/CreditHistory"
+                },
+                "type": "array"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "endDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "noClaimsDiscountYears": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "riskGroups": {
+                "items": {
+                  "$ref": "#/components/schemas/RiskGroup"
+                },
+                "type": "array"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "InterestedParty": {
+        "discriminator": {
+          "propertyName": "$type"
+        },
+        "properties": {
+          "$type": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "partyId": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "$type"
+        ],
+        "type": "object"
+      },
+      "InvestmentIncome": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "guaranteedPeriodEndDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "incomes": {
+                "items": {
+                  "$ref": "#/components/schemas/Income"
+                },
+                "type": "array"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "InvestmentSaving": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "basicSumAssured": {
+                "format": "double",
+                "type": "number"
+              },
+              "bonusDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "deathReturnType": {
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "incomes": {
+                "items": {
+                  "$ref": "#/components/schemas/Income"
+                },
+                "type": "array"
+              },
+              "interestBasis": {
+                "type": "string"
+              },
+              "interestPaidAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "interestRate": {
+                "format": "double",
+                "type": "number"
+              },
+              "interestRateExpiryDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "maturityDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "noticePeriodDays": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "ownedFunds": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedFund"
+                },
+                "type": "array"
+              },
+              "paidUpDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "providerValuationAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "providerValuationDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "riskGroups": {
+                "items": {
+                  "$ref": "#/components/schemas/RiskGroup"
+                },
+                "type": "array"
+              },
+              "status": {
+                "type": "string"
+              },
+              "surrenderValueAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "surrenderValueDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "taxStatus": {
+                "type": "string"
+              },
+              "totalBonusAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "totalPaymentsAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "totalPaymentsDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Loan": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "apr": {
+                "format": "double",
+                "type": "number"
+              },
+              "borrowedAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "creditHistories": {
+                "items": {
+                  "$ref": "#/components/schemas/CreditHistory"
+                },
+                "type": "array"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "dateRepaid": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "holdingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestBasis": {
+                "type": "string"
+              },
+              "interestRate": {
+                "format": "double",
+                "type": "number"
+              },
+              "interestRateExpiryDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isLoanRepaidOnDeath": {
+                "type": "boolean"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "rates": {
+                "items": {
+                  "$ref": "#/components/schemas/Rate"
+                },
+                "type": "array"
+              },
+              "redemptionPenaltyDetails": {
+                "type": "string"
+              },
+              "redemptionPenaltyEndDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "repaymentDueDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "termMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "LumpSumBenefit": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RiskBenefit"
+          },
+          {
+            "properties": {
+              "amount": {
+                "format": "double",
+                "type": "number"
+              },
+              "associatedPartyId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "dateCurrent": {
+                "format": "date-time",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "LumpSumIncome": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Income"
+          },
+          {
+            "properties": {
+              "amount": {
+                "format": "double",
+                "type": "number"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Metric": {
+        "properties": {
+          "amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "Mortgage": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "borrowedAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "creditHistories": {
+                "items": {
+                  "$ref": "#/components/schemas/CreditHistory"
+                },
+                "type": "array"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "dateRepaid": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "discountReceivedAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "incomes": {
+                "items": {
+                  "$ref": "#/components/schemas/Income"
+                },
+                "type": "array"
+              },
+              "interestBasis": {
+                "type": "string"
+              },
+              "interestOnlyRepaymentVehicle": {
+                "type": "string"
+              },
+              "interestRate": {
+                "format": "double",
+                "type": "number"
+              },
+              "interestRateExpiryDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isOffset": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "localAuthorityName": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "propertyId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "rates": {
+                "items": {
+                  "$ref": "#/components/schemas/Rate"
+                },
+                "type": "array"
+              },
+              "redemptionPenaltyDetails": {
+                "type": "string"
+              },
+              "redemptionPenaltyEndDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "repaymentDueDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "repaymentType": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "term": {
+                "format": "double",
+                "type": "number"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Motor": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "abiModelCode": {
+                "type": "string"
+              },
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "colour": {
+                "type": "string"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isLeased": {
+                "type": "boolean"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "make": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "manuafacturedYear": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "mileage": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "mileageUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "model": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "purchasePrice": {
+                "format": "double",
+                "type": "number"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "registration": {
+                "type": "string"
+              },
+              "registrationDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "saleDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              },
+              "vinNumber": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "OtherAsset": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isLeased": {
+                "type": "boolean"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "purchasePrice": {
+                "format": "double",
+                "type": "number"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "saleDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "OtherService": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "address": {
+                "$ref": "#/components/schemas/Address"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "billDeliveryType": {
+                "type": "string"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "creditHistories": {
+                "items": {
+                  "$ref": "#/components/schemas/CreditHistory"
+                },
+                "type": "array"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "endDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "meterType": {
+                "type": "string"
+              },
+              "metrics": {
+                "items": {
+                  "$ref": "#/components/schemas/Metric"
+                },
+                "type": "array"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "serviceOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "OwnedFund": {
+        "discriminator": {
+          "propertyName": "$type"
+        },
+        "properties": {
+          "$type": {
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "originalValue": {
+            "format": "double",
+            "type": "number"
+          },
+          "purchaseDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "purchasePrice": {
+            "format": "double",
+            "type": "number"
+          },
+          "quantity": {
+            "format": "double",
+            "type": "number"
+          },
+          "unitsCurrentDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "value": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "$type"
+        ],
+        "type": "object"
+      },
+      "OwnedHoldingCover": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RiskCover"
+          },
+          {
+            "properties": {
+              "coverType": {
+                "type": "string"
+              },
+              "coverTypeId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "coveredLocation": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "endDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "excessAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "exclusions": {
+                "items": {
+                  "$ref": "#/components/schemas/Exclusion"
+                },
+                "type": "array"
+              },
+              "holdingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "isPersonalPossessionsCovered": {
+                "type": "boolean"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "riskBenefit": {
+                "$ref": "#/components/schemas/RiskBenefit"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "OwnedItem": {
+        "discriminator": {
+          "propertyName": "$type"
+        },
+        "properties": {
+          "$type": {
+            "type": "string"
+          },
+          "accountReference": {
+            "type": "string"
+          },
+          "ageInMonths": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "childItems": {
+            "items": {
+              "$ref": "#/components/schemas/OwnedItem"
+            },
+            "type": "array"
+          },
+          "createdDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "date": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "fee": {
+            "$ref": "#/components/schemas/Fee"
+          },
+          "friendlyName": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "interestedParties": {
+            "items": {
+              "$ref": "#/components/schemas/InterestedParty"
+            },
+            "type": "array"
+          },
+          "investmentSolution": {
+            "type": "string"
+          },
+          "isManaged": {
+            "type": "boolean"
+          },
+          "isPartyFeeModelApplied": {
+            "type": "boolean"
+          },
+          "isUnderAgency": {
+            "type": "boolean"
+          },
+          "itemValidDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "itemValidMethod": {
+            "type": "string"
+          },
+          "managedStage": {
+            "type": "string"
+          },
+          "marketsId": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "marketsName": {
+            "type": "string"
+          },
+          "parentId": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "systemLastUpdateDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "systemLastUpdateMethod": {
+            "type": "string"
+          },
+          "systemMatchReference": {
+            "type": "string"
+          },
+          "systemNextUpdateDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "systemNotes": {
+            "type": "string"
+          },
+          "userLastUpdateDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "userNotes": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "$type"
+        ],
+        "type": "object"
+      },
+      "OwnedItemReferrer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InterestedParty"
+          },
+          {
+            "properties": {
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "partyId": {
+                "format": "int32",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Owner": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InterestedParty"
+          },
+          {
+            "properties": {
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "isPrimary": {
+                "type": "boolean"
+              },
+              "partyId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "proportion": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "OwnerEmployer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InterestedParty"
+          },
+          {
+            "properties": {
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "partyId": {
+                "format": "int32",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Participants": {
+        "properties": {
+          "assetIdentifiers": {
+            "items": {
+              "$ref": "#/components/schemas/AssetIdentifiers"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PartyCover": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RiskCover"
+          },
+          {
+            "properties": {
+              "coverType": {
+                "type": "string"
+              },
+              "coverTypeId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "coveredLocation": {
+                "type": "string"
+              },
+              "endDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "excessAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "exclusions": {
+                "items": {
+                  "$ref": "#/components/schemas/Exclusion"
+                },
+                "type": "array"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "isOwnOccupationCovered": {
+                "type": "boolean"
+              },
+              "partyId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "riskBenefit": {
+                "$ref": "#/components/schemas/RiskBenefit"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Payment": {
+        "discriminator": {
+          "propertyName": "$type"
+        },
+        "properties": {
+          "$type": {
+            "type": "string"
+          },
+          "amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "currencyCode": {
+            "type": "string"
+          },
+          "date": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "employeeAmount": {
+            "format": "double",
+            "type": "number"
+          },
+          "employerAmount": {
+            "format": "double",
+            "type": "number"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "method": {
+            "type": "string"
+          },
+          "partyId": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "percent": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "$type"
+        ],
+        "type": "object"
+      },
+      "Portfolio": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "purchasePrice": {
+                "format": "double",
+                "type": "number"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "saleDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Position": {
+        "description": "The entire position of a person.",
+        "properties": {
+          "connections": {
+            "description": "List of associated connections",
+            "items": {
+              "$ref": "#/components/schemas/Connection"
+            },
+            "type": "array"
+          },
+          "consents": {
+            "description": "List of associated consents",
+            "items": {
+              "$ref": "#/components/schemas/Consent"
+            },
+            "type": "array"
+          },
+          "ownedItems": {
+            "description": "List of associated ownedItems",
+            "items": {
+              "$ref": "#/components/schemas/OwnedItem"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "PowerOfAttorney": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InterestedParty"
+          },
+          {
+            "properties": {
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "partyId": {
+                "format": "int32",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "PreAuthoriseRequest": {
+        "description": "Request to prepare for user authorization",
+        "example": {
+          "channel": "OpenBanking",
+          "providerId": 1000027,
+          "redirectUrl": "https://www.example.com/redirect",
+          "softwareId": "7pu7wZoX7TEPYPgQqm7cOk"
+        },
+        "properties": {
+          "channel": {
+            "description": "Channel to use for provider communication",
+            "enum": [
+              "OpenBanking",
+              "Agency",
+              "DirectAccess"
+            ],
+            "type": "string"
+          },
+          "partyId": {
+            "description": "Id of the party for the preauthorise.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "providerId": {
+            "description": "Provider to authorise with",
+            "format": "int32",
+            "type": "integer"
+          },
+          "redirectUrl": {
+            "description": "Redirect url to post back to after authorization request",
+            "type": "string"
+          },
+          "softwareId": {
+            "description": "Software Id of the caller",
+            "type": "string"
+          }
+        },
+        "required": [
+          "channel",
+          "providerId"
+        ],
+        "type": "object"
+      },
+      "PreAuthoriseResponse": {
+        "description": "Response to initiate user authorization",
+        "properties": {
+          "parameters": {
+            "$ref": "#/components/schemas/AuthorizeRequestParameters"
+          },
+          "authorizationUrl": {
+            "description": "The bank's website to direct the user to",
+            "type": "string"
+          }
+        },
+        "required": [
+          "authorizationUrl"
+        ],
+        "type": "object"
+      },
+      "Property": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "address": {
+                "$ref": "#/components/schemas/Address"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "incomes": {
+                "items": {
+                  "$ref": "#/components/schemas/Income"
+                },
+                "type": "array"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isLeased": {
+                "type": "boolean"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "purchasePrice": {
+                "format": "double",
+                "type": "number"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "saleDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Protection": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "ceasedDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "creditHistories": {
+                "items": {
+                  "$ref": "#/components/schemas/CreditHistory"
+                },
+                "type": "array"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "endDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "ownedFunds": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedFund"
+                },
+                "type": "array"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "providerValuationAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "providerValuationDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "reviewDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "riskGroups": {
+                "items": {
+                  "$ref": "#/components/schemas/RiskGroup"
+                },
+                "type": "array"
+              },
+              "schemeName": {
+                "type": "string"
+              },
+              "schemeReference": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Rate": {
+        "properties": {
+          "apr": {
+            "format": "double",
+            "type": "number"
+          },
+          "basis": {
+            "type": "string"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "startDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RegularBenefit": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RiskBenefit"
+          },
+          {
+            "properties": {
+              "amount": {
+                "format": "double",
+                "type": "number"
+              },
+              "associatedPartyId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "benefitPaymentMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "dateCurrent": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "deferredPaymentMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "frequency": {
+                "type": "string"
+              },
+              "isToPolicyEndDate": {
+                "type": "boolean"
+              },
+              "paymentChangeBasis": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "RegularIncome": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Income"
+          },
+          {
+            "properties": {
+              "amount": {
+                "format": "double",
+                "type": "number"
+              },
+              "amountChangeBasis": {
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "endDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "frequency": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "spouseAnnuityPercent": {
+                "format": "double",
+                "type": "number"
+              },
+              "spouseBenefitAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "spouseBenefitFrequency": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "RegularPayment": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Payment"
+          },
+          {
+            "properties": {
+              "amount": {
+                "format": "double",
+                "type": "number"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "employeeAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "employerAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "endDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "frequency": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "method": {
+                "type": "string"
+              },
+              "partyId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "paymentChangeBasis": {
+                "type": "string"
+              },
+              "percent": {
+                "format": "double",
+                "type": "number"
+              },
+              "premiumGuaranteeBasis": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Rental": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "creditHistories": {
+                "items": {
+                  "$ref": "#/components/schemas/CreditHistory"
+                },
+                "type": "array"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "holdingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "RetirementIncome": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "guaranteedPeriodEndDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "incomes": {
+                "items": {
+                  "$ref": "#/components/schemas/Income"
+                },
+                "type": "array"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "ownedFunds": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedFund"
+                },
+                "type": "array"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "projectedIncomeAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "projectedIncomeFrequency": {
+                "type": "string"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "taxFreeCashTakenAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "RetirementSaving": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "deathReturnType": {
+                "type": "string"
+              },
+              "earningsIncludedToDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "guaranteedPeriodEndDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "incomeFrequency": {
+                "type": "string"
+              },
+              "incomes": {
+                "items": {
+                  "$ref": "#/components/schemas/Income"
+                },
+                "type": "array"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "maturityDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "maximumIncomeAllowed": {
+                "format": "double",
+                "type": "number"
+              },
+              "nonProtectedRightsValue": {
+                "format": "double",
+                "type": "number"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "ownedFunds": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedFund"
+                },
+                "type": "array"
+              },
+              "paidUpDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "projectedIncomeAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "projectedIncomeFrequency": {
+                "type": "string"
+              },
+              "projectedSpouseAnnuityPercent": {
+                "format": "double",
+                "type": "number"
+              },
+              "projectedSpouseBenefitAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "projectedSpouseBenefitFrequency": {
+                "type": "string"
+              },
+              "projectedWorkYearsRemaining": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "protectedRightsValue": {
+                "format": "double",
+                "type": "number"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "providerValuationAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "providerValuationDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "retirementAge": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "retirementDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "riskGroups": {
+                "items": {
+                  "$ref": "#/components/schemas/RiskGroup"
+                },
+                "type": "array"
+              },
+              "salary": {
+                "format": "double",
+                "type": "number"
+              },
+              "salaryDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "schemeEmployer": {
+                "type": "string"
+              },
+              "schemeName": {
+                "type": "string"
+              },
+              "schemeReference": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "taxFreeCashTakenAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "totalPaymentsAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "totalPaymentsDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "transferValueAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "transferValueDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "valuationBasis": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "RiskBenefit": {
+        "discriminator": {
+          "propertyName": "$type"
+        },
+        "properties": {
+          "$type": {
+            "type": "string"
+          },
+          "amount": {
+            "format": "double",
+            "type": "number"
+          },
+          "associatedPartyId": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "dateCurrent": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "$type"
+        ],
+        "type": "object"
+      },
+      "RiskCover": {
+        "discriminator": {
+          "propertyName": "$type"
+        },
+        "properties": {
+          "$type": {
+            "type": "string"
+          },
+          "coverType": {
+            "type": "string"
+          },
+          "coverTypeId": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "coveredLocation": {
+            "type": "string"
+          },
+          "endDate": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "excessAmount": {
+            "format": "double",
+            "type": "number"
+          },
+          "exclusions": {
+            "items": {
+              "$ref": "#/components/schemas/Exclusion"
+            },
+            "type": "array"
+          },
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "reference": {
+            "type": "string"
+          },
+          "riskBenefit": {
+            "$ref": "#/components/schemas/RiskBenefit"
+          }
+        },
+        "required": [
+          "$type"
+        ],
+        "type": "object"
+      },
+      "RiskGroup": {
+        "properties": {
+          "id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "riskCovers": {
+            "items": {
+              "$ref": "#/components/schemas/RiskCover"
+            },
+            "type": "array"
+          },
+          "trigger": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SinglePayment": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Payment"
+          },
+          {
+            "properties": {
+              "amount": {
+                "format": "double",
+                "type": "number"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "employeeAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "employerAmount": {
+                "format": "double",
+                "type": "number"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "method": {
+                "type": "string"
+              },
+              "partyId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "percent": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "SystemEquity": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "equityId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "numberOfShares": {
+                "format": "double",
+                "type": "number"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "purchasePrice": {
+                "format": "double",
+                "type": "number"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "saleDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "sharesCurrentDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "SystemFund": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedFund"
+          },
+          {
+            "properties": {
+              "currencyCode": {
+                "type": "string"
+              },
+              "fundId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "notes": {
+                "type": "string"
+              },
+              "originalValue": {
+                "format": "double",
+                "type": "number"
+              },
+              "purchaseDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "purchasePrice": {
+                "format": "double",
+                "type": "number"
+              },
+              "quantity": {
+                "format": "double",
+                "type": "number"
+              },
+              "unitsCurrentDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Trustee": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InterestedParty"
+          },
+          {
+            "properties": {
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "partyId": {
+                "format": "int32",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Utility": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "address": {
+                "$ref": "#/components/schemas/Address"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "billDeliveryType": {
+                "type": "string"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "creditHistories": {
+                "items": {
+                  "$ref": "#/components/schemas/CreditHistory"
+                },
+                "type": "array"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "meterType": {
+                "type": "string"
+              },
+              "metrics": {
+                "items": {
+                  "$ref": "#/components/schemas/Metric"
+                },
+                "type": "array"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "payments": {
+                "items": {
+                  "$ref": "#/components/schemas/Payment"
+                },
+                "type": "array"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "reviewDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "serviceOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Will": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "endDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "reviewDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      },
+      "Wrap": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OwnedItem"
+          },
+          {
+            "properties": {
+              "accountReference": {
+                "type": "string"
+              },
+              "ageInMonths": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "childItems": {
+                "items": {
+                  "$ref": "#/components/schemas/OwnedItem"
+                },
+                "type": "array"
+              },
+              "createdDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "currencyCode": {
+                "type": "string"
+              },
+              "date": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "fee": {
+                "$ref": "#/components/schemas/Fee"
+              },
+              "friendlyName": {
+                "type": "string"
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "interestedParties": {
+                "items": {
+                  "$ref": "#/components/schemas/InterestedParty"
+                },
+                "type": "array"
+              },
+              "investmentSolution": {
+                "type": "string"
+              },
+              "isManaged": {
+                "type": "boolean"
+              },
+              "isPartyFeeModelApplied": {
+                "type": "boolean"
+              },
+              "isUnderAgency": {
+                "type": "boolean"
+              },
+              "itemValidDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "itemValidMethod": {
+                "type": "string"
+              },
+              "managedStage": {
+                "type": "string"
+              },
+              "marketsId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "marketsName": {
+                "type": "string"
+              },
+              "offeringId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "offeringType": {
+                "type": "string"
+              },
+              "parentId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "productOfferingId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerId": {
+                "format": "int32",
+                "type": "integer"
+              },
+              "providerName": {
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "systemLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemLastUpdateMethod": {
+                "type": "string"
+              },
+              "systemMatchReference": {
+                "type": "string"
+              },
+              "systemNextUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "systemNotes": {
+                "type": "string"
+              },
+              "unlistedProviderName": {
+                "type": "string"
+              },
+              "userLastUpdateDate": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "userNotes": {
+                "type": "string"
+              },
+              "value": {
+                "format": "double",
+                "type": "number"
+              }
+            },
+            "type": "object"
+          }
+        ],
+        "properties": {},
+        "type": "object"
+      }
+    }
+  }
+}

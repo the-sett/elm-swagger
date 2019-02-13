@@ -1,0 +1,399 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "A service for storing audited actions\r\n# About\r\n\r\nAudit is a CRUD API and Data Store for audited Verdus operations\r\n\r\n# Authentication\r\nTo utilise the Audit Service, a bearer token must be issued along with the request.  \r\n\r\nDetails on how to obtain a bearer token, and how to utilise it as part of the request are detailed in the [Runpath Platform Authentication Guide](/document/PlatformAuthentication).\r\nTo obtain an access token, follow the instructions in the Platform Authentication guide and add the following scopes:  \r\n<br/>\r\nScopes   | \r\n------------- | \r\naudit.read |\t\r\naudit.readwrite |\t\r\n",
+    "title": "Runpath.Audit",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://cat-audit.runpath.com/"
+    }
+  ],
+  "paths": {
+    "/audits": {
+      "post": {
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Audit"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Audit"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "description": "BadRequest"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "422": {
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Audit"
+        ],
+        "operationId": "Audit_Create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Audit"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Audit"
+              }
+            }
+          },
+          "description": "New audit to save",
+          "required": true
+        },
+        "summary": "Saves a new audit to the data store"
+      }
+    },
+    "/audits/{correlationId}": {
+      "get": {
+        "parameters": [
+          {
+            "description": "CorrelationId of audit data",
+            "in": "path",
+            "name": "correlationId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Audit"
+                  },
+                  "type": "array"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Audit"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Audit"
+        ],
+        "operationId": "Audit_GetByCorrelationId",
+        "summary": "Get all audits by it's correlation Id"
+      }
+    },
+    "/audits/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "description": "The unique id of the audit to get",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Audit"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Audit"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Audit"
+        ],
+        "operationId": "Audit_GetById",
+        "summary": "Get an audit by it's unique Id"
+      }
+    },
+    "/parties/{partyId}/audits": {
+      "get": {
+        "parameters": [
+          {
+            "description": "PartyId of audit data",
+            "in": "path",
+            "name": "partyId",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Audit"
+                  },
+                  "type": "array"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Audit"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "description": "BadRequest"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "Parties"
+        ],
+        "operationId": "Parties_GetByPartyId",
+        "summary": "Get all audits by it's party Id"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Audit": {
+        "description": "The Audit object",
+        "properties": {
+          "auditDate": {
+            "description": "Date of audit entry",
+            "example": "2018-06-27T09:18:27.6982643+00:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "channel": {
+            "description": "Technical context (i.e Openbanking/Yodlee)",
+            "enum": [
+              "OpenBanking",
+              "Yodlee"
+            ],
+            "type": "string"
+          },
+          "correlationId": {
+            "description": "Unique identifier to keep track of the workflow/journey",
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "correlationReferences": {
+            "description": "Reference to other events and processes",
+            "items": {
+              "$ref": "#/components/schemas/CorrelationReference"
+            },
+            "type": "array"
+          },
+          "description": {
+            "description": "Description of the event",
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string"
+          },
+          "entity": {
+            "description": "Entity involved in the audit process",
+            "enum": [
+              "User",
+              "Party",
+              "OwnedItem",
+              "Transaction",
+              "Consent"
+            ],
+            "type": "string"
+          },
+          "entityAction": {
+            "description": "Action taken on the entity",
+            "enum": [
+              "Create",
+              "Get",
+              "Update",
+              "Delete"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "description": "The unique identifier for the Audit object.",
+            "format": "int32",
+            "type": "integer"
+          },
+          "invoked": {
+            "description": "How the audit was invoked",
+            "enum": [
+              "User",
+              "Client",
+              "Schedule",
+              "Bank",
+              "Event"
+            ],
+            "type": "string"
+          },
+          "partnerId": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "partnerName": {
+            "description": "Name of the partner associated to the journey",
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "partyId": {
+            "description": "Associated partyId for the user",
+            "format": "int32",
+            "type": "integer"
+          },
+          "process": {
+            "description": "Business context (i.e BankDataAggregation, BankAccountConnection)",
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source",
+            "description": "Data related to the event provider"
+          },
+          "status": {
+            "description": "Status of the event",
+            "enum": [
+              "Success",
+              "Failure"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "auditDate",
+          "entity",
+          "entityAction",
+          "invoked",
+          "channel",
+          "status",
+          "description",
+          "correlationId"
+        ],
+        "type": "object"
+      },
+      "CorrelationReference": {
+        "description": "CorrelationReference object",
+        "properties": {
+          "name": {
+            "description": "Name of the reference",
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "value": {
+            "description": "Value of the reference",
+            "maxLength": 150,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "type": "object"
+      },
+      "Source": {
+        "description": "Metadata related to the event provider",
+        "properties": {
+          "ipAddress": {
+            "description": "IPaddress of the machine calling the service",
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          }
+        },
+        "required": [
+          "ipAddress"
+        ],
+        "type": "object"
+      }
+    }
+  }
+}
