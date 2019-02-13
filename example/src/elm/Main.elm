@@ -26,6 +26,7 @@ import TheSett.Cards as Cards
 import TheSett.Debug
 import TheSett.Laf as Laf exposing (devices, fonts, responsiveMeta, wrapper)
 import TheSett.Textfield as Textfield
+import Update2
 import Update3
 
 
@@ -34,21 +35,15 @@ import Update3
 type alias Model =
     { laf : Laf.Model
     , auth : Auth.Model
-    , session : Session
+    , session : Auth.Status
     , username : String
     , password : String
     , debugStyle : Bool
     }
 
 
-type Session
-    = Initial
-    | LoggedOut
-    | FailedAuth
-    | LoggedIn
-        { scopes : List String
-        , subject : String
-        }
+type Pages
+    = LoadSwagger LoadSwagger.Model
 
 
 {-| The content editor program top-level message types.
@@ -81,7 +76,7 @@ init _ =
             Auth.init
                 { authApiRoot = config.authRoot
                 }
-      , session = LoggedIn { scopes = [], subject = "alice" }
+      , session = Auth.LoggedIn { scopes = [], subject = "alice" }
       , username = ""
       , password = ""
       , debugStyle = False
@@ -100,7 +95,7 @@ update action model =
 
         AuthMsg msg ->
             Update3.lift .auth (\x m -> { m | auth = x }) AuthMsg Auth.update msg model
-                |> Update3.evalMaybe (\status -> \nextModel -> ( { nextModel | session = authStatusToSession status }, Cmd.none )) Cmd.none
+                |> Update3.evalMaybe (\status -> \nextModel -> ( { nextModel | session = status }, Cmd.none )) Cmd.none
 
         InitialTimeout ->
             ( model, Auth.refresh |> Cmd.map AuthMsg )
@@ -119,19 +114,6 @@ update action model =
 
         ToggleGrid ->
             ( { model | debugStyle = not model.debugStyle }, Cmd.none )
-
-
-authStatusToSession : Auth.Status -> Session
-authStatusToSession status =
-    case status of
-        Auth.LoggedOut ->
-            LoggedOut
-
-        Auth.Failed ->
-            FailedAuth
-
-        Auth.LoggedIn access ->
-            LoggedIn access
 
 
 
@@ -186,16 +168,13 @@ styledBody model =
             , Laf.style devices
             , Css.Global.global global
             , case model.session of
-                Initial ->
-                    initialView
-
-                LoggedOut ->
+                Auth.LoggedOut ->
                     loginView model
 
-                FailedAuth ->
+                Auth.Failed ->
                     notPermittedView model
 
-                LoggedIn state ->
+                Auth.LoggedIn state ->
                     authenticatedView model state
             ]
 
