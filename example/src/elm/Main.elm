@@ -2,13 +2,11 @@ module Main exposing (init, update, view, Model, Msg)
 
 {-| The content editor client top module.
 
-@docs init, update, subscriptions, view, Model, Msg
+@docs init, update, view, Model, Msg
 
 -}
 
-import Auth
 import Browser
-import Config exposing (config)
 import Css
 import Css.Global
 import Grid
@@ -16,7 +14,6 @@ import Html
 import Html.Styled exposing (div, form, h4, img, label, span, styled, text, toUnstyled)
 import Html.Styled.Attributes exposing (for, name, src)
 import Html.Styled.Events exposing (onClick, onInput)
-import LoadSwagger
 import Process
 import Responsive
 import Styles exposing (lg, md, sm, xl)
@@ -30,59 +27,23 @@ import Update2
 import Update3
 
 
-{-| The content editor program model.
--}
 type alias Model =
     { laf : Laf.Model
-    , auth : Auth.Model
-    , session : Auth.Status
-    , username : String
-    , password : String
     , debugStyle : Bool
     }
 
 
-type Pages
-    = LoadSwagger LoadSwagger.Model
-
-
-{-| The content editor program top-level message types.
--}
 type Msg
     = LafMsg Laf.Msg
-    | AuthMsg Auth.Msg
-    | InitialTimeout
-    | LogIn
-    | TryAgain
-    | UpdateUsername String
-    | UpdatePassword String
     | ToggleGrid
 
 
-
--- Initialization
-
-
-{-| Initializes the application state by setting it to the default Auth state
-of LoggedOut.
-Requests that an Auth refresh be performed to check what the current
-authentication state is, as the application may be able to re-authenticate
-from a refresh token held as a cookie, without needing the user to log in.
--}
 init : flags -> ( Model, Cmd Msg )
 init _ =
     ( { laf = Laf.init
-      , auth =
-            Auth.init
-                { authApiRoot = config.authRoot
-                }
-      , session = Auth.LoggedIn { scopes = [], subject = "alice" }
-      , username = ""
-      , password = ""
       , debugStyle = False
       }
     , Cmd.none
-      -- Process.sleep 1000 |> Task.perform (always InitialTimeout)
     )
 
 
@@ -92,25 +53,6 @@ update action model =
         LafMsg lafMsg ->
             Laf.update LafMsg lafMsg model.laf
                 |> Tuple.mapFirst (\laf -> { model | laf = laf })
-
-        AuthMsg msg ->
-            Update3.lift .auth (\x m -> { m | auth = x }) AuthMsg Auth.update msg model
-                |> Update3.evalMaybe (\status -> \nextModel -> ( { nextModel | session = status }, Cmd.none )) Cmd.none
-
-        InitialTimeout ->
-            ( model, Auth.refresh |> Cmd.map AuthMsg )
-
-        LogIn ->
-            ( model, Auth.login { username = model.username, password = model.password } |> Cmd.map AuthMsg )
-
-        TryAgain ->
-            ( { model | username = "", password = "" }, Auth.unauthed |> Cmd.map AuthMsg )
-
-        UpdateUsername str ->
-            ( { model | username = str }, Cmd.none )
-
-        UpdatePassword str ->
-            ( { model | password = str }, Cmd.none )
 
         ToggleGrid ->
             ( { model | debugStyle = not model.debugStyle }, Cmd.none )
@@ -167,15 +109,7 @@ styledBody model =
             , fonts
             , Laf.style devices
             , Css.Global.global global
-            , case model.session of
-                Auth.LoggedOut ->
-                    loginView model
-
-                Auth.Failed ->
-                    notPermittedView model
-
-                Auth.LoggedIn state ->
-                    authenticatedView model state
+            , authenticatedView model
             ]
 
         debugStyle =
@@ -190,111 +124,13 @@ styledBody model =
             div [] innerView
 
 
-initialView : Html.Styled.Html Msg
-initialView =
-    framing <|
-        [ card "images/data_center-large.png"
-            "Attempting to Restore"
-            [ text "Attempting to restore authentication using a local refresh token." ]
-            []
-            devices
-        ]
-
-
-loginView : { a | laf : Laf.Model, username : String, password : String } -> Html.Styled.Html Msg
-loginView model =
-    framing <|
-        [ card "images/data_center-large.png"
-            "Log In"
-            [ form []
-                [ Textfield.text
-                    LafMsg
-                    [ 1 ]
-                    model.laf
-                    [ Textfield.value model.username ]
-                    [ onInput UpdateUsername
-                    ]
-                    [ text "Username" ]
-                    devices
-                , Textfield.text
-                    LafMsg
-                    [ 2 ]
-                    model.laf
-                    [ Textfield.disabled
-                    , Textfield.value model.password
-                    ]
-                    [ onInput UpdatePassword
-                    ]
-                    [ text "Password" ]
-                    devices
-                ]
-            ]
-            [ Buttons.button [] [ onClick LogIn ] [ text "Log In" ] devices
-            ]
-            devices
-        ]
-
-
-notPermittedView : { a | laf : Laf.Model, username : String, password : String } -> Html.Styled.Html Msg
-notPermittedView model =
-    framing <|
-        [ card "images/data_center-large.png"
-            "Not Authorized"
-            [ form []
-                [ Textfield.text
-                    LafMsg
-                    [ 1 ]
-                    model.laf
-                    [ Textfield.value model.username ]
-                    [ onInput UpdateUsername
-                    ]
-                    [ text "Username" ]
-                    devices
-                , Textfield.text
-                    LafMsg
-                    [ 2 ]
-                    model.laf
-                    [ Textfield.disabled
-                    , Textfield.value model.password
-                    ]
-                    [ onInput UpdatePassword
-                    ]
-                    [ text "Password" ]
-                    devices
-                ]
-            ]
-            [ Buttons.button [] [ onClick TryAgain ] [ text "Try Again" ] devices ]
-            devices
-        ]
-
-
-authenticatedView : { a | username : String } -> { scopes : List String, subject : String } -> Html.Styled.Html Msg
-authenticatedView model user =
+authenticatedView : Model -> Html.Styled.Html Msg
+authenticatedView model =
     framing <|
         [ card "images/data_center-large.png"
             "Authenticated"
-            [-- Lists.ul []
-             --     [ Lists.li [ Lists.withBody ]
-             --         [ Lists.content []
-             --             [ text "Logged In As"
-             --             , Lists.body [] [ text model.username ]
-             --             ]
-             --         ]
-             --     , Lists.li [ Lists.withBody ]
-             --         [ Lists.content []
-             --             [ text "With Id"
-             --             , Lists.body [] [ text user.subject ]
-             --             ]
-             --         ]
-             --     , Lists.li [ Lists.withBody ]
-             --         [ Lists.content []
-             --             [ text "With Permissions"
-             --             , Lists.body [] <| permissionsToChips user.scopes
-             --             ]
-             --         ]
-             --     ]
-            ]
-            [ Buttons.button [] [ onClick TryAgain ] [ text "Try Again" ] devices ]
+            []
+            [ Buttons.button [] [] [ text "Try Again" ] devices ]
             devices
         ]
 
@@ -377,14 +213,3 @@ card imageUrl title cardBody controls devices =
         , Cards.controls controls
         ]
         devices
-
-
-permissionsToChips : List String -> List (Html.Styled.Html Msg)
-permissionsToChips permissions =
-    -- List.map
-    --     (\permission ->
-    --         span [ class "mdl-chip mdl-chip__text" ]
-    --             [ text permission ]
-    --     )
-    --     permissions
-    []
