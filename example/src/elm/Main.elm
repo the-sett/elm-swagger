@@ -30,18 +30,21 @@ import Update3
 type alias Model =
     { laf : Laf.Model
     , debugStyle : Bool
+    , apiSpecUrl : String
     }
 
 
 type Msg
     = LafMsg Laf.Msg
     | ToggleGrid
+    | SetAPISpecUrl String
 
 
 init : flags -> ( Model, Cmd Msg )
 init _ =
     ( { laf = Laf.init
       , debugStyle = False
+      , apiSpecUrl = ""
       }
     , Cmd.none
     )
@@ -56,6 +59,9 @@ update action model =
 
         ToggleGrid ->
             ( { model | debugStyle = not model.debugStyle }, Cmd.none )
+
+        SetAPISpecUrl str ->
+            ( { model | apiSpecUrl = str }, Cmd.none )
 
 
 
@@ -109,7 +115,7 @@ styledBody model =
             , fonts
             , Laf.style devices
             , Css.Global.global global
-            , authenticatedView model
+            , initialView model
             ]
 
         debugStyle =
@@ -124,13 +130,24 @@ styledBody model =
             div [] innerView
 
 
-authenticatedView : Model -> Html.Styled.Html Msg
-authenticatedView model =
+initialView : Model -> Html.Styled.Html Msg
+initialView model =
     framing <|
         [ card "images/data_center-large.png"
-            "Authenticated"
-            []
-            [ Buttons.button [] [] [ text "Try Again" ] devices ]
+            "Explore OpenAPI"
+            [ form []
+                [ Textfield.text
+                    LafMsg
+                    [ 1 ]
+                    model.laf
+                    [ Textfield.value model.apiSpecUrl ]
+                    [ onInput SetAPISpecUrl
+                    ]
+                    [ text "URL" ]
+                    devices
+                ]
+            ]
+            [ Buttons.button [] [] [ text "Load" ] devices ]
             devices
         ]
 
@@ -176,8 +193,8 @@ card imageUrl title cardBody controls devices =
             ]
         , md
             [ Styles.styles
-                [ Css.maxWidth <| Css.px 420
-                , Css.minWidth <| Css.px 400
+                [ Css.maxWidth <| Css.px 820
+                , Css.minWidth <| Css.px 800
                 , Css.backgroundColor <| paperWhite
                 ]
             ]
@@ -193,20 +210,7 @@ card imageUrl title cardBody controls devices =
                 , Css.height <| Css.pct 100
                 ]
                 []
-                [ Buttons.button
-                    [ sm
-                        [ Styles.styles
-                            [ Css.position Css.absolute
-                            , Css.bottom <| Css.em -3.5
-                            , Css.right <| Css.em 2
-                            , Css.backgroundColor <| Css.rgb 160 220 180
-                            ]
-                        ]
-                    ]
-                    [ onClick ToggleGrid ]
-                    [ text "Grid" ]
-                    devices
-                ]
+                []
             ]
         , Cards.title title
         , Cards.body cardBody
