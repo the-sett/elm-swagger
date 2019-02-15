@@ -14,6 +14,7 @@ import Html
 import Html.Styled exposing (div, form, h4, img, label, span, styled, text, toUnstyled)
 import Html.Styled.Attributes exposing (for, name, src)
 import Html.Styled.Events exposing (onClick, onInput)
+import Http
 import Process
 import Responsive
 import Styles exposing (lg, md, sm, xl)
@@ -38,6 +39,8 @@ type Msg
     = LafMsg Laf.Msg
     | ToggleGrid
     | SetAPISpecUrl String
+    | LoadSpec
+    | FetchedApiSpec (Result Http.Error String)
 
 
 init : flags -> ( Model, Cmd Msg )
@@ -62,6 +65,12 @@ update action model =
 
         SetAPISpecUrl str ->
             ( { model | apiSpecUrl = str }, Cmd.none )
+
+        LoadSpec ->
+            ( model, Cmd.none )
+
+        FetchedApiSpec result ->
+            ( model, Cmd.none )
 
 
 
@@ -147,7 +156,7 @@ initialView model =
                     devices
                 ]
             ]
-            [ Buttons.button [] [] [ text "Load" ] devices ]
+            [ Buttons.button [] [ onClick LoadSpec ] [ text "Load" ] devices ]
             devices
         ]
 
@@ -217,3 +226,15 @@ card imageUrl title cardBody controls devices =
         , Cards.controls controls
         ]
         devices
+
+
+
+-- HTTP Interaction
+
+
+getApiSpec : String -> Cmd Msg
+getApiSpec url =
+    Http.get
+        { url = url
+        , expect = Http.expectString FetchedApiSpec
+        }
