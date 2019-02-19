@@ -26,7 +26,7 @@ console.log(`Building for ${TARGET_ENV}`);
 const commonConfig = {
   output: {
     path: outputPath,
-    filename: `assets/${outputFilename}`,
+    filename: `assets/${outputFilename}`
   },
 
   resolve: {
@@ -94,7 +94,7 @@ if (isDev) {
 
     devServer: {
       historyApiFallback: true,
-      contentBase: './src',
+      contentBase: './assets',
       inline: true,
       stats: 'errors-only',
       port: 9071,
