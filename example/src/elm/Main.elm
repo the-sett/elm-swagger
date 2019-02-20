@@ -16,6 +16,7 @@ import Html.Styled exposing (div, form, h4, img, label, span, styled, text, toUn
 import Html.Styled.Attributes exposing (for, name, src)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
+import Json.Decode as Decode
 import Maybe.Extra
 import Process
 import Responsive
@@ -75,7 +76,17 @@ update action model =
             ( model, getApiSpec model.apiSpecPath )
 
         FetchedApiSpec result ->
-            ( model, Cmd.none )
+            case result of
+                Err _ ->
+                    ( model, Cmd.none )
+
+                Ok val ->
+                    let
+                        _ =
+                            Debug.log "spec" <|
+                                Decode.decodeString GenericDecoder.meta val
+                    in
+                    ( model, Cmd.none )
 
 
 
