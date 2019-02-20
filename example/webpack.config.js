@@ -17,7 +17,7 @@ const isProd = TARGET_ENV === prod;
 
 
 // entry and output path/filename variables
-const entryPath = path.join(__dirname, 'assets/index.js');
+const entryPath = path.join(__dirname, 'src/scripts/index.js');
 const outputPath = path.join(__dirname, 'dist');
 const outputFilename = isProd ? '[name]-[hash].js' : '[name].js';
 
@@ -26,7 +26,7 @@ console.log(`Building for ${TARGET_ENV}`);
 const commonConfig = {
   output: {
     path: outputPath,
-    filename: `assets/${outputFilename}`
+    filename: `js/${outputFilename}`
   },
 
   resolve: {
@@ -58,7 +58,7 @@ const commonConfig = {
 
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'assets/index.html',
+      template: 'src/scripts/index.html',
       inject: 'body',
       filename: 'index.html',
     }),
