@@ -53,4 +53,4 @@ dict =
 
 meta : Decoder Meta
 meta =
-    Decode.oneOf [ string, bool, int, float, null, Decode.lazy (\_ -> array), Decode.lazy (\_ -> dict) ]
+    Decode.oneOf [ bool, int, float, null, string, Decode.lazy (\_ -> array), Decode.lazy (\_ -> dict) ]
