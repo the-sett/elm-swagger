@@ -15,6 +15,7 @@ import Html.Styled exposing (div, form, h4, img, label, span, styled, text, toUn
 import Html.Styled.Attributes exposing (for, name, src)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
+import Maybe.Extra
 import Process
 import Responsive
 import Styles exposing (lg, md, sm, xl)
@@ -26,19 +27,21 @@ import TheSett.Laf as Laf exposing (devices, fonts, responsiveMeta, wrapper)
 import TheSett.Textfield as Textfield
 import Update2
 import Update3
+import Url exposing (Url)
 
 
 type alias Model =
     { laf : Laf.Model
     , debugStyle : Bool
-    , apiSpecUrl : String
+    , apiSpecPath : String
+    , apiSpecUrl : Maybe Url
     }
 
 
 type Msg
     = LafMsg Laf.Msg
     | ToggleGrid
-    | SetAPISpecUrl String
+    | UpdateSpecUrl String
     | LoadSpec
     | FetchedApiSpec (Result Http.Error String)
 
@@ -47,7 +50,8 @@ init : flags -> ( Model, Cmd Msg )
 init _ =
     ( { laf = Laf.init
       , debugStyle = False
-      , apiSpecUrl = ""
+      , apiSpecPath = ""
+      , apiSpecUrl = Nothing
       }
     , Cmd.none
     )
@@ -63,11 +67,11 @@ update action model =
         ToggleGrid ->
             ( { model | debugStyle = not model.debugStyle }, Cmd.none )
 
-        SetAPISpecUrl str ->
-            ( { model | apiSpecUrl = str }, Cmd.none )
+        UpdateSpecUrl str ->
+            ( { model | apiSpecPath = str, apiSpecUrl = Url.fromString str }, Cmd.none )
 
         LoadSpec ->
-            ( model, Cmd.none )
+            ( model, getApiSpec model.apiSpecPath )
 
         FetchedApiSpec result ->
             ( model, Cmd.none )
@@ -149,14 +153,20 @@ initialView model =
                     LafMsg
                     [ 1 ]
                     model.laf
-                    [ Textfield.value model.apiSpecUrl ]
-                    [ onInput SetAPISpecUrl
+                    [ Textfield.value model.apiSpecPath ]
+                    [ onInput UpdateSpecUrl
                     ]
                     [ text "URL" ]
                     devices
                 ]
             ]
-            [ Buttons.button [] [ onClick LoadSpec ] [ text "Load" ] devices ]
+            [ Buttons.button []
+                [ onClick LoadSpec
+                , Html.Styled.Attributes.disabled <| Maybe.Extra.isNothing model.apiSpecUrl
+                ]
+                [ text "Load" ]
+                devices
+            ]
             devices
         ]
 
