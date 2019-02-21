@@ -9,7 +9,6 @@ module Main exposing (init, update, view, Model, Msg)
 import Browser
 import Css
 import Css.Global
-import GenericDecoder
 import Grid
 import Html
 import Html.Styled exposing (div, form, h4, img, label, span, styled, text, toUnstyled)
@@ -17,6 +16,7 @@ import Html.Styled.Attributes exposing (for, name, src)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode
+import Json.Decode.Generic as Json
 import Maybe.Extra
 import Process
 import Responsive
@@ -84,7 +84,7 @@ update action model =
                     let
                         _ =
                             Debug.log "spec" <|
-                                Decode.decodeString GenericDecoder.meta val
+                                Decode.decodeString Json.json val
                     in
                     ( model, Cmd.none )
 
