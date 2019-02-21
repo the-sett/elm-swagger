@@ -21,6 +21,7 @@ import Maybe.Extra
 import Process
 import Responsive
 import Styles exposing (lg, md, sm, xl)
+import Swagger.Decoder
 import Task
 import TheSett.Buttons as Buttons
 import TheSett.Cards as Cards

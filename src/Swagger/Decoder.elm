@@ -28,15 +28,11 @@ import Json.Decode
         , succeed
         , value
         )
-import Json.Decode.Pipeline exposing (custom, hardcoded, optional, required)
+import Json.Decode.Extra exposing (andMap, withDefault)
 import Swagger.Model exposing (..)
 
 
-type alias Spec =
-    Swagger.Model.OpenApi
-
-
-defaultSpec : Spec
+defaultSpec : Swagger.Model.OpenApi
 defaultSpec =
     { info = Nothing
     , servers = []
@@ -51,6 +47,6 @@ defaultSpec =
 
 {-| Decodes a Swagger Spec from json.
 -}
-decoder : Decoder Spec
+decoder : Decoder Swagger.Model.OpenApi
 decoder =
     map (\_ -> defaultSpec) string
