@@ -1,4 +1,4 @@
-module OpenApi.Decoder exposing (decoder)
+module OpenApi.Decoder exposing (openApiDecoder)
 
 {-| Decoders for Swagger Specs.
 
@@ -7,7 +7,7 @@ module OpenApi.Decoder exposing (decoder)
 -}
 
 import Dict exposing (Dict)
-import Json.Decode
+import Json.Decode as Decode
     exposing
         ( Decoder
         , andThen
@@ -29,12 +29,49 @@ import Json.Decode
         , value
         )
 import Json.Decode.Extra exposing (andMap, withDefault)
-import OpenApi.Model exposing (..)
+import OpenApi.Model
+    exposing
+        ( AnyOrExpression(..)
+        , Callback(..)
+        , Components
+        , Contact
+        , Discriminator
+        , Encoding
+        , Example(..)
+        , ExternalDocs
+        , Header(..)
+        , HttpVerb(..)
+        , Info
+        , License
+        , Link(..)
+        , MediaType
+        , OAuthFlow
+        , OAuthFlows
+        , OpenApi
+        , Operation
+        , ParamIn(..)
+        , Parameter(..)
+        , PathItem
+        , Reference
+        , RequestBody(..)
+        , Response(..)
+        , Schema(..)
+        , SecurityRequirement
+        , SecurityScheme(..)
+        , SecurityTokenIn(..)
+        , Server
+        , ServerVariable
+        , Style(..)
+        , Tag
+        , Version(..)
+        , Xml
+        )
 
 
-defaultSpec : OpenApi.Model.OpenApi
+defaultSpec : OpenApi
 defaultSpec =
-    { info = Nothing
+    { openapi = OpenApi_3_0_0
+    , info = Nothing
     , servers = []
     , security = Nothing
     , paths = Dict.empty
@@ -47,6 +84,33 @@ defaultSpec =
 
 {-| Decodes a Swagger Spec from json.
 -}
-decoder : Decoder OpenApi.Model.OpenApi
-decoder =
-    map (\_ -> defaultSpec) string
+openApiDecoder : Decoder OpenApi
+openApiDecoder =
+    Decode.succeed
+        (\version ->
+            { defaultSpec
+                | openapi = version
+            }
+        )
+        |> andMap (field "openapi" versionDecoder)
+
+
+versionDecoder : Decoder Version
+versionDecoder =
+    let
+        toVersion str =
+            case str of
+                "3.0.0" ->
+                    succeed OpenApi_3_0_0
+
+                "3.0.1" ->
+                    succeed OpenApi_3_0_1
+
+                "3.0.2" ->
+                    succeed OpenApi_3_0_2
+
+                _ ->
+                    Decode.fail ("unknown version: " ++ str)
+    in
+    Decode.string
+        |> andThen toVersion

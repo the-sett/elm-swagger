@@ -85,7 +85,7 @@ update action model =
                     let
                         _ =
                             Debug.log "spec" <|
-                                Decode.decodeString Json.json val
+                                Decode.decodeString OpenApi.Decoder.openApiDecoder val
                     in
                     ( model, Cmd.none )
 

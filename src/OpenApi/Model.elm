@@ -1,4 +1,39 @@
-module OpenApi.Model exposing (AnyOrExpression(..), Callback(..), Components, Contact, Discriminator, Encoding, Example(..), ExternalDocs, Header(..), HttpVerb(..), Info, License, Link(..), MediaType, OAuthFlow, OAuthFlows, OpenApi, Operation, ParamIn(..), Parameter(..), PathItem, Reference, RequestBody(..), Response(..), Schema(..), SecurityRequirement, SecurityScheme(..), SecurityTokenIn(..), Server, ServerVariable, Style(..), Tag, Version(..), Xml)
+module OpenApi.Model exposing
+    ( AnyOrExpression(..)
+    , Callback(..)
+    , Components
+    , Contact
+    , Discriminator
+    , Encoding
+    , Example(..)
+    , ExternalDocs
+    , Header(..)
+    , HttpVerb(..)
+    , Info
+    , License
+    , Link(..)
+    , MediaType
+    , OAuthFlow
+    , OAuthFlows
+    , OpenApi
+    , Operation
+    , ParamIn(..)
+    , Parameter(..)
+    , PathItem
+    , Reference
+    , RequestBody(..)
+    , Response(..)
+    , Schema(..)
+    , SecurityRequirement
+    , SecurityScheme(..)
+    , SecurityTokenIn(..)
+    , Server
+    , ServerVariable
+    , Style(..)
+    , Tag
+    , Version(..)
+    , Xml
+    )
 
 import Dict exposing (Dict)
 import Json.Decode
@@ -154,7 +189,8 @@ type alias OAuthFlows =
 
 
 type alias OpenApi =
-    { info : Maybe Info
+    { openapi : Version
+    , info : Maybe Info
     , servers : List Server
     , security : Maybe SecurityRequirement
     , paths : Dict String PathItem
@@ -315,8 +351,9 @@ type alias Tag =
 
 
 type Version
-    = Swager_2_0
-    | OpenApi_3_0_0
+    = OpenApi_3_0_0
+    | OpenApi_3_0_1
+    | OpenApi_3_0_2
 
 
 type alias Xml =
