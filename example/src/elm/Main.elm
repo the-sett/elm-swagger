@@ -18,10 +18,10 @@ import Http
 import Json.Decode as Decode
 import Json.Decode.Generic as Json
 import Maybe.Extra
+import OpenApi.Decoder
 import Process
 import Responsive
 import Styles exposing (lg, md, sm, xl)
-import Swagger.Decoder
 import Task
 import TheSett.Buttons as Buttons
 import TheSett.Cards as Cards
@@ -160,7 +160,7 @@ initialView : Model -> Html.Styled.Html Msg
 initialView model =
     framing <|
         [ card "images/data_center-large.png"
-            "Explore OpenAPI"
+            "Explore OpenApi"
             [ form []
                 [ Textfield.text
                     LafMsg

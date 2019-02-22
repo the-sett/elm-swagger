@@ -1,4 +1,4 @@
-module Swagger.Decoder exposing (decoder)
+module OpenApi.Decoder exposing (decoder)
 
 {-| Decoders for Swagger Specs.
 
@@ -29,10 +29,10 @@ import Json.Decode
         , value
         )
 import Json.Decode.Extra exposing (andMap, withDefault)
-import Swagger.Model exposing (..)
+import OpenApi.Model exposing (..)
 
 
-defaultSpec : Swagger.Model.OpenApi
+defaultSpec : OpenApi.Model.OpenApi
 defaultSpec =
     { info = Nothing
     , servers = []
@@ -47,6 +47,6 @@ defaultSpec =
 
 {-| Decodes a Swagger Spec from json.
 -}
-decoder : Decoder Swagger.Model.OpenApi
+decoder : Decoder OpenApi.Model.OpenApi
 decoder =
     map (\_ -> defaultSpec) string

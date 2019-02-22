@@ -1,4 +1,4 @@
-module Swagger exposing (Spec, swagger)
+module OpenApi exposing (Spec, swagger)
 
 {-| Provides a DSL for constructing Swagger Specs.
 
@@ -8,7 +8,7 @@ module Swagger exposing (Spec, swagger)
 
 import Dict exposing (Dict)
 import Json.Encode as Encode
-import Swagger.Model exposing (..)
+import OpenApi.Model exposing (..)
 
 
 {-| The type of Swagger Specs.

@@ -1,4 +1,4 @@
-module Swagger.SchemaBuilder exposing (Builder)
+module OpenApi.SchemaBuilder exposing (Builder)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode

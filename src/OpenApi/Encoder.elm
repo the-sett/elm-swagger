@@ -1,4 +1,4 @@
-module Swagger.Encoder exposing (EncoderProgram, encode, encodeSpecProgram, encodeValue)
+module OpenApi.Encoder exposing (EncoderProgram, encode, encodeSpecProgram, encodeValue)
 
 {-| Encoders for Swagger Specs.
 
@@ -9,7 +9,7 @@ module Swagger.Encoder exposing (EncoderProgram, encode, encodeSpecProgram, enco
 import Dict exposing (Dict)
 import Json.Decode as Decode
 import Json.Encode as Encode
-import Swagger.Model exposing (..)
+import OpenApi.Model exposing (..)
 
 
 type alias Spec =
