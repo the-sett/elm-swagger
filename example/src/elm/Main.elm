@@ -49,6 +49,24 @@ type Msg
     | FetchedApiSpec (Result Http.Error String)
 
 
+debugMsg msg =
+    case msg of
+        LafMsg _ ->
+            "LafMsg"
+
+        ToggleGrid ->
+            "ToggleGrid"
+
+        UpdateSpecUrl _ ->
+            "UpdateSpecUrl"
+
+        LoadSpec ->
+            "LoadSpec"
+
+        FetchedApiSpec _ ->
+            "FetchedApiSpec"
+
+
 init : flags -> ( Model, Cmd Msg )
 init _ =
     ( { laf = Laf.init
@@ -62,7 +80,11 @@ init _ =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update action model =
-    case Debug.log "msg" action of
+    let
+        _ =
+            Debug.log "msg" (debugMsg action)
+    in
+    case action of
         LafMsg lafMsg ->
             Laf.update LafMsg lafMsg model.laf
                 |> Tuple.mapFirst (\laf -> { model | laf = laf })

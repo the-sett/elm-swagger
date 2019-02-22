@@ -87,12 +87,14 @@ defaultSpec =
 openApiDecoder : Decoder OpenApi
 openApiDecoder =
     Decode.succeed
-        (\version ->
+        (\version info ->
             { defaultSpec
                 | openapi = version
+                , info = info
             }
         )
         |> andMap (field "openapi" versionDecoder)
+        |> andMap (Decode.maybe (field "info" infoDecoder))
 
 
 versionDecoder : Decoder Version
@@ -114,3 +116,49 @@ versionDecoder =
     in
     Decode.string
         |> andThen toVersion
+
+
+infoDecoder : Decoder Info
+infoDecoder =
+    Decode.succeed
+        (\title description termsOfService contact license version ->
+            { title = title
+            , description = description
+            , termsOfService = termsOfService
+            , contact = contact
+            , license = license
+            , version = version
+            }
+        )
+        |> andMap (Decode.maybe (field "title" Decode.string))
+        |> andMap (Decode.maybe (field "description" Decode.string))
+        |> andMap (Decode.maybe (field "termsOfService" Decode.string))
+        |> andMap (Decode.maybe (field "contact" contactDecoder))
+        |> andMap (Decode.maybe (field "license" licenseDecoder))
+        |> andMap (Decode.maybe (field "version" Decode.string))
+
+
+licenseDecoder : Decoder License
+licenseDecoder =
+    Decode.succeed
+        (\name url ->
+            { name = name
+            , url = url
+            }
+        )
+        |> andMap (Decode.maybe (field "name" Decode.string))
+        |> andMap (Decode.maybe (field "url" Decode.string))
+
+
+contactDecoder : Decoder Contact
+contactDecoder =
+    Decode.succeed
+        (\name url email ->
+            { name = name
+            , url = url
+            , email = email
+            }
+        )
+        |> andMap (Decode.maybe (field "name" Decode.string))
+        |> andMap (Decode.maybe (field "url" Decode.string))
+        |> andMap (Decode.maybe (field "email" Decode.string))
