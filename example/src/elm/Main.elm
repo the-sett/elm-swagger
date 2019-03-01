@@ -67,12 +67,16 @@ debugMsg msg =
             "FetchedApiSpec"
 
 
+testSpec =
+    "http://localhost:9071/example-specs/open-banking/payment-initiation-openapi.json"
+
+
 init : flags -> ( Model, Cmd Msg )
 init _ =
     ( { laf = Laf.init
       , debugStyle = False
-      , apiSpecPath = ""
-      , apiSpecUrl = Nothing
+      , apiSpecPath = testSpec
+      , apiSpecUrl = Url.fromString testSpec
       }
     , Cmd.none
     )

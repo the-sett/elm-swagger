@@ -87,14 +87,16 @@ defaultSpec =
 openApiDecoder : Decoder OpenApi
 openApiDecoder =
     Decode.succeed
-        (\version info ->
+        (\version info paths ->
             { defaultSpec
                 | openapi = version
                 , info = info
+                , paths = paths
             }
         )
         |> andMap (field "openapi" versionDecoder)
         |> andMap (Decode.maybe (field "info" infoDecoder))
+        |> andMap (field "paths" (Decode.dict pathItemDecoder))
 
 
 versionDecoder : Decoder Version
@@ -162,3 +164,136 @@ contactDecoder =
         |> andMap (Decode.maybe (field "name" Decode.string))
         |> andMap (Decode.maybe (field "url" Decode.string))
         |> andMap (Decode.maybe (field "email" Decode.string))
+
+
+httpVerbToString : HttpVerb -> String
+httpVerbToString verb =
+    case verb of
+        Get _ ->
+            "get"
+
+        Put _ ->
+            "put"
+
+        Post _ ->
+            "post"
+
+        Delete _ ->
+            "delete"
+
+        Options _ ->
+            "options"
+
+        Head _ ->
+            "head"
+
+        Patch _ ->
+            "patch"
+
+        Trace _ ->
+            "trace"
+
+
+stringToHttpVerb : String -> Maybe (Operation -> HttpVerb)
+stringToHttpVerb str =
+    case String.toLower str of
+        "get" ->
+            Just Get
+
+        "put" ->
+            Just Put
+
+        "post" ->
+            Just Post
+
+        "delete" ->
+            Just Delete
+
+        "options" ->
+            Just Options
+
+        "head" ->
+            Just Head
+
+        "patch" ->
+            Just Patch
+
+        "trace" ->
+            Just Trace
+
+        _ ->
+            Nothing
+
+
+pathItemDecoder : Decoder PathItem
+pathItemDecoder =
+    Decode.succeed
+        (\ref summary description gets ->
+            { ref = ref
+            , summary = summary
+            , description = description
+            , operations = Dict.empty
+            , servers = []
+            , parameters = []
+            }
+        )
+        |> andMap (Decode.maybe (field "ref" Decode.string))
+        |> andMap (Decode.maybe (field "summary" Decode.string))
+        |> andMap (Decode.maybe (field "description" Decode.string))
+        |> andMap (Decode.maybe (field "get" operationDecoder))
+
+
+httpVerbDecoder : Decoder HttpVerb
+httpVerbDecoder =
+    let
+        httpVerbFilter k _ =
+            List.member (String.toLower k) [ "get", "put", "post", "delete", "options", "head", "patch", "trace" ]
+    in
+    Decode.dict operationDecoder
+        |> Decode.map (Dict.filter httpVerbFilter)
+        |> Decode.map (Dict.map (\k v -> stringToHttpVerb k <| v))
+
+
+
+-- { ref : Maybe String
+-- , summary : Maybe String
+-- , description : Maybe String
+-- , operations : Dict HttpVerb Operation
+-- , servers : List Server
+-- , parameters : List Parameter
+-- }
+
+
+operationDecoder : Decoder Operation
+operationDecoder =
+    Decode.succeed
+        { tags = []
+        , summary = Nothing
+        , description = Nothing
+        , externalDocs = Nothing
+        , operationId = Nothing
+        , parameters = []
+        , requestBody = Nothing
+        , responses = Dict.empty
+        , callbacks = Dict.empty
+        , deprecated = False
+        , security = Dict.empty
+        , servers = []
+        }
+
+
+
+-- type alias Operation =
+--     { tags : List String
+--     , summary : Maybe String
+--     , description : Maybe String
+--     , externalDocs : Maybe ExternalDocs
+--     , operationId : Maybe String
+--     , parameters : List Parameter
+--     , requestBody : Maybe RequestBody
+--     , responses : Dict String Response
+--     , callbacks : Dict String Callback
+--     , deprecated : Bool
+--     , security : Dict String (List String)
+--     , servers : List Server
+--     }
