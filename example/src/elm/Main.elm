@@ -9,6 +9,7 @@ module Main exposing (init, update, view, Model, Msg)
 import Browser
 import Css
 import Css.Global
+import Dict
 import Grid
 import Html
 import Html.Styled exposing (div, form, h4, img, label, span, styled, text, toUnstyled)
@@ -370,12 +371,24 @@ getApiSpec url =
 
 
 
--- Pretty Printing the OpenAPI Spec
+-- View for the OpenAPI Spec
 
 
 loadedView : OpenApi.OpenApi -> Html.Styled.Html Msg
 loadedView spec =
     styled div
-        [ Css.property "background" "white" ]
+        [ Css.backgroundColor <| Css.rgb 255 255 255 ]
         []
-        [ text "loaded" ]
+        [ pathsView spec ]
+
+
+pathsView : OpenApi.OpenApi -> Html.Styled.Html Msg
+pathsView spec =
+    div
+        []
+        (Dict.foldl pathView [] spec.paths)
+
+
+pathView : String -> OpenApi.PathItem -> List (Html.Styled.Html Msg) -> List (Html.Styled.Html Msg)
+pathView url path accum =
+    div [] [ text url ] :: accum
