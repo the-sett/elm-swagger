@@ -277,14 +277,10 @@ fetchErrorView err =
 
 decodeErrorView : Decode.Error -> Html.Styled.Html Msg
 decodeErrorView err =
-    let
-        decodeErrorToString error =
-            "Malformed OpenAPI Spec JSON"
-    in
     framing <|
         [ card "images/data_center-large.png"
             "Explore OpenApi"
-            [ text <| decodeErrorToString err ]
+            [ text <| (String.left 400 <| Decode.errorToString err) ]
             [ Buttons.button []
                 [ onClick TryAgain ]
                 [ text "Try Again" ]
