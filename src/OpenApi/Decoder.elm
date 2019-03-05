@@ -227,8 +227,25 @@ stringToHttpVerb str =
 
 pathItemDecoder : Decoder PathItem
 pathItemDecoder =
+    Decode.map2
+        (\pathItem operations ->
+            { pathItem | operations = operations }
+        )
+        pathItemPartialDecoder
+        httpVerbDecoder
+
+
+{-| Decodes a PathItem, with the 'operations' field defaulted to empty.
+
+This is because the operations are not supplied as a single field in the JSON,
+but as fields named 'get', 'put', etc. Decoding the operations is done as a seperate
+pass.
+
+-}
+pathItemPartialDecoder : Decoder PathItem
+pathItemPartialDecoder =
     Decode.succeed
-        (\ref summary description gets ->
+        (\ref summary description ->
             { ref = ref
             , summary = summary
             , description = description
@@ -240,19 +257,9 @@ pathItemDecoder =
         |> andMap (Decode.maybe (field "ref" Decode.string))
         |> andMap (Decode.maybe (field "summary" Decode.string))
         |> andMap (Decode.maybe (field "description" Decode.string))
-        |> andMap (Decode.maybe (field "get" operationDecoder))
 
 
 
--- httpVerbDecoder : Decoder HttpVerb
--- httpVerbDecoder =
---     let
---         httpVerbFilter k _ =
---             List.member (String.toLower k) [ "get", "put", "post", "delete", "options", "head", "patch", "trace" ]
---     in
---     Decode.dict operationDecoder
---         |> Decode.map (Dict.filter httpVerbFilter)
---         |> Decode.map (Dict.map (\k v -> stringToHttpVerb k <| v))
 -- { ref : Maybe String
 -- , summary : Maybe String
 -- , description : Maybe String
@@ -260,6 +267,33 @@ pathItemDecoder =
 -- , servers : List Server
 -- , parameters : List Parameter
 -- }
+
+
+{-| Decodes just the HTTP operations from a PathItem.
+
+The path operations are encoded in the JSON as fields named 'get', 'put', etc.
+These fields are exatracted as a list of `( HttpVerb, Operation )` pairs.
+
+-}
+httpVerbDecoder : Decoder (List ( HttpVerb, Operation ))
+httpVerbDecoder =
+    let
+        extractOperations : Dict String Operation -> List ( HttpVerb, Operation )
+        extractOperations dict =
+            Dict.foldl
+                (\verb operation accum ->
+                    case stringToHttpVerb verb of
+                        Just httpVerb ->
+                            ( httpVerb, operation ) :: accum
+
+                        Nothing ->
+                            accum
+                )
+                []
+                dict
+    in
+    Decode.dict operationDecoder
+        |> Decode.map extractOperations
 
 
 operationDecoder : Decoder Operation
