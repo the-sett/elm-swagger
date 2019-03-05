@@ -126,14 +126,14 @@ type Header
 
 
 type HttpVerb
-    = Get Operation
-    | Put Operation
-    | Post Operation
-    | Delete Operation
-    | Options Operation
-    | Head Operation
-    | Patch Operation
-    | Trace Operation
+    = Get
+    | Put
+    | Post
+    | Delete
+    | Options
+    | Head
+    | Patch
+    | Trace
 
 
 type alias Info =
@@ -249,7 +249,7 @@ type alias PathItem =
     { ref : Maybe String
     , summary : Maybe String
     , description : Maybe String
-    , operations : Dict String Operation
+    , operations : List ( HttpVerb, Operation )
     , servers : List Server
     , parameters : List Parameter
     }

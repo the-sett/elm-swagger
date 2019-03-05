@@ -169,32 +169,32 @@ contactDecoder =
 httpVerbToString : HttpVerb -> String
 httpVerbToString verb =
     case verb of
-        Get _ ->
+        Get ->
             "get"
 
-        Put _ ->
+        Put ->
             "put"
 
-        Post _ ->
+        Post ->
             "post"
 
-        Delete _ ->
+        Delete ->
             "delete"
 
-        Options _ ->
+        Options ->
             "options"
 
-        Head _ ->
+        Head ->
             "head"
 
-        Patch _ ->
+        Patch ->
             "patch"
 
-        Trace _ ->
+        Trace ->
             "trace"
 
 
-stringToHttpVerb : String -> Maybe (Operation -> HttpVerb)
+stringToHttpVerb : String -> Maybe HttpVerb
 stringToHttpVerb str =
     case String.toLower str of
         "get" ->
@@ -232,7 +232,7 @@ pathItemDecoder =
             { ref = ref
             , summary = summary
             , description = description
-            , operations = Dict.empty
+            , operations = []
             , servers = []
             , parameters = []
             }
@@ -243,18 +243,16 @@ pathItemDecoder =
         |> andMap (Decode.maybe (field "get" operationDecoder))
 
 
-httpVerbDecoder : Decoder HttpVerb
-httpVerbDecoder =
-    let
-        httpVerbFilter k _ =
-            List.member (String.toLower k) [ "get", "put", "post", "delete", "options", "head", "patch", "trace" ]
-    in
-    Decode.dict operationDecoder
-        |> Decode.map (Dict.filter httpVerbFilter)
-        |> Decode.map (Dict.map (\k v -> stringToHttpVerb k <| v))
 
-
-
+-- httpVerbDecoder : Decoder HttpVerb
+-- httpVerbDecoder =
+--     let
+--         httpVerbFilter k _ =
+--             List.member (String.toLower k) [ "get", "put", "post", "delete", "options", "head", "patch", "trace" ]
+--     in
+--     Decode.dict operationDecoder
+--         |> Decode.map (Dict.filter httpVerbFilter)
+--         |> Decode.map (Dict.map (\k v -> stringToHttpVerb k <| v))
 -- { ref : Maybe String
 -- , summary : Maybe String
 -- , description : Maybe String
