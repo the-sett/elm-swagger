@@ -45,8 +45,8 @@ type alias Model =
 
 type ViewState
     = GetSpec
-    | FetchError
-    | DecodeError
+    | FetchError Http.Error
+    | DecodeError Decode.Error
     | Loaded OpenApi.OpenApi
 
 
@@ -55,6 +55,7 @@ type Msg
     | ToggleGrid
     | UpdateSpecUrl String
     | LoadSpec
+    | TryAgain
     | FetchedApiSpec (Result Http.Error String)
 
 
@@ -72,6 +73,9 @@ debugMsg msg =
         LoadSpec ->
             "LoadSpec"
 
+        TryAgain ->
+            "TryAgain"
+
         FetchedApiSpec _ ->
             "FetchedApiSpec"
 
@@ -80,14 +84,18 @@ testSpec =
     "http://localhost:9071/example-specs/open-banking/payment-initiation-openapi.json"
 
 
+initialModel =
+    { laf = Laf.init
+    , debugStyle = False
+    , apiSpecPath = testSpec
+    , apiSpecUrl = Url.fromString testSpec
+    , state = GetSpec
+    }
+
+
 init : flags -> ( Model, Cmd Msg )
 init _ =
-    ( { laf = Laf.init
-      , debugStyle = False
-      , apiSpecPath = testSpec
-      , apiSpecUrl = Url.fromString testSpec
-      , state = GetSpec
-      }
+    ( initialModel
     , Cmd.none
     )
 
@@ -112,15 +120,18 @@ update action model =
         LoadSpec ->
             ( model, getApiSpec model.apiSpecPath )
 
+        TryAgain ->
+            ( initialModel, Cmd.none )
+
         FetchedApiSpec result ->
             case result of
-                Err _ ->
-                    ( { model | state = FetchError }, Cmd.none )
+                Err err ->
+                    ( { model | state = FetchError err }, Cmd.none )
 
                 Ok val ->
                     case Decode.decodeString OpenApi.Decoder.openApiDecoder val of
                         Err err ->
-                            ( { model | state = DecodeError }, Cmd.none )
+                            ( { model | state = DecodeError err }, Cmd.none )
 
                         Ok spec ->
                             ( { model | state = Loaded spec }, Cmd.none )
@@ -177,7 +188,18 @@ styledBody model =
             , fonts
             , Laf.style devices
             , Css.Global.global global
-            , initialView model
+            , case model.state of
+                GetSpec ->
+                    initialView model
+
+                FetchError err ->
+                    fetchErrorView err
+
+                DecodeError err ->
+                    decodeErrorView err
+
+                Loaded _ ->
+                    initialView model
             ]
 
         debugStyle =
@@ -214,6 +236,58 @@ initialView model =
                 , Html.Styled.Attributes.disabled <| Maybe.Extra.isNothing model.apiSpecUrl
                 ]
                 [ text "Load" ]
+                devices
+            ]
+            devices
+        ]
+
+
+fetchErrorView : Http.Error -> Html.Styled.Html Msg
+fetchErrorView err =
+    let
+        httpErrorToString error =
+            case error of
+                Http.BadUrl url ->
+                    "Bad URL: " ++ url
+
+                Http.Timeout ->
+                    "Timed Out"
+
+                Http.NetworkError ->
+                    "Network Error"
+
+                Http.BadStatus status ->
+                    "Bad Status: " ++ String.fromInt status
+
+                Http.BadBody desc ->
+                    "Bad response: " ++ desc
+    in
+    framing <|
+        [ card "images/data_center-large.png"
+            "Explore OpenApi"
+            [ text <| httpErrorToString err ]
+            [ Buttons.button []
+                [ onClick TryAgain ]
+                [ text "Try Again" ]
+                devices
+            ]
+            devices
+        ]
+
+
+decodeErrorView : Decode.Error -> Html.Styled.Html Msg
+decodeErrorView err =
+    let
+        decodeErrorToString error =
+            "Malformed OpenAPI Spec JSON"
+    in
+    framing <|
+        [ card "images/data_center-large.png"
+            "Explore OpenApi"
+            [ text <| decodeErrorToString err ]
+            [ Buttons.button []
+                [ onClick TryAgain ]
+                [ text "Try Again" ]
                 devices
             ]
             devices
