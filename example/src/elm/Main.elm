@@ -19,6 +19,7 @@ import Json.Decode as Decode
 import Json.Decode.Generic as Json
 import Maybe.Extra
 import OpenApi.Decoder
+import OpenApi.Model as OpenApi
 import Process
 import Responsive
 import Styles exposing (lg, md, sm, xl)
@@ -38,7 +39,15 @@ type alias Model =
     , debugStyle : Bool
     , apiSpecPath : String
     , apiSpecUrl : Maybe Url
+    , state : ViewState
     }
+
+
+type ViewState
+    = GetSpec
+    | FetchError
+    | DecodeError
+    | Loaded OpenApi.OpenApi
 
 
 type Msg
@@ -77,6 +86,7 @@ init _ =
       , debugStyle = False
       , apiSpecPath = testSpec
       , apiSpecUrl = Url.fromString testSpec
+      , state = GetSpec
       }
     , Cmd.none
     )
@@ -105,15 +115,15 @@ update action model =
         FetchedApiSpec result ->
             case result of
                 Err _ ->
-                    ( model, Cmd.none )
+                    ( { model | state = FetchError }, Cmd.none )
 
                 Ok val ->
-                    let
-                        _ =
-                            Debug.log "spec" <|
-                                Decode.decodeString OpenApi.Decoder.openApiDecoder val
-                    in
-                    ( model, Cmd.none )
+                    case Decode.decodeString OpenApi.Decoder.openApiDecoder val of
+                        Err err ->
+                            ( { model | state = DecodeError }, Cmd.none )
+
+                        Ok spec ->
+                            ( { model | state = Loaded spec }, Cmd.none )
 
 
 
