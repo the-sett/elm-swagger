@@ -198,8 +198,8 @@ styledBody model =
                 DecodeError err ->
                     decodeErrorView err
 
-                Loaded _ ->
-                    initialView model
+                Loaded spec ->
+                    loadedView spec
             ]
 
         debugStyle =
@@ -371,3 +371,15 @@ getApiSpec url =
         { url = url
         , expect = Http.expectString FetchedApiSpec
         }
+
+
+
+-- Pretty Printing the OpenAPI Spec
+
+
+loadedView : OpenApi.OpenApi -> Html.Styled.Html Msg
+loadedView spec =
+    styled div
+        [ Css.property "background" "white" ]
+        []
+        [ text "loaded" ]
