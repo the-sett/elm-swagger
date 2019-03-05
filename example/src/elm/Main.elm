@@ -386,9 +386,14 @@ pathsView : OpenApi.OpenApi -> Html.Styled.Html Msg
 pathsView spec =
     div
         []
-        (Dict.foldl pathView [] spec.paths)
+        (List.map (uncurry pathView) (Dict.toList spec.paths))
 
 
-pathView : String -> OpenApi.PathItem -> List (Html.Styled.Html Msg) -> List (Html.Styled.Html Msg)
-pathView url path accum =
-    div [] [ text url ] :: accum
+uncurry : (a -> b -> c) -> ( a, b ) -> c
+uncurry fn =
+    \( fst, snd ) -> fn fst snd
+
+
+pathView : String -> OpenApi.PathItem -> Html.Styled.Html Msg
+pathView url path =
+    div [] [ text url ]
