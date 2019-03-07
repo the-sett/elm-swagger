@@ -359,6 +359,20 @@ parameterRefDecoder =
         |> andMap (field "ref" Decode.string)
 
 
+{-| todo:
+name : Maybe String
+description : Maybe String
+required : Maybe Bool
+deprecated : Maybe Bool
+allowEmptyValue : Maybe Bool
+style : Maybe Style
+explode : Maybe Bool
+allowReserved : Maybe Bool
+schema : Maybe Schema
+example : Maybe String
+examples : Dict String Example
+content : Dict String MediaType
+-}
 parameterInlineDecoder : Decoder Parameter
 parameterInlineDecoder =
     Decode.succeed <|
@@ -377,26 +391,3 @@ parameterInlineDecoder =
             , examples = Dict.empty
             , content = Dict.empty
             }
-
-
-
--- type Parameter
---     = ParameterRef Reference
---     | ParameterInline
---         { name : Maybe String
---         , in_ : Maybe ParamIn
---
---         -- Same as Header from here on - merge the two?
---         , description : Maybe String
---         , required : Maybe Bool
---         , deprecated : Maybe Bool
---         , allowEmptyValue : Maybe Bool
---         , style : Maybe Style
---         , explode : Maybe Bool
---         , allowReserved : Maybe Bool
---         , schema : Maybe Schema
---         , example : Maybe String
---         , examples : Dict String Example
---         , content : Dict String MediaType
---         }
---
