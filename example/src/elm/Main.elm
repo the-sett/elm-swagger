@@ -132,6 +132,10 @@ update action model =
                 Ok val ->
                     case Decode.decodeString OpenApi.Decoder.openApiDecoder val of
                         Err err ->
+                            let
+                                _ =
+                                    Debug.log "decode error" <| Decode.errorToString err
+                            in
                             ( { model | state = DecodeError err }, Cmd.none )
 
                         Ok spec ->
@@ -278,17 +282,10 @@ fetchErrorView err =
 
 decodeErrorView : Decode.Error -> Html.Styled.Html Msg
 decodeErrorView err =
-    framing <|
-        [ card "images/data_center-large.png"
-            "Explore OpenApi"
-            [ text <| (String.left 400 <| Decode.errorToString err) ]
-            [ Buttons.button []
-                [ onClick TryAgain ]
-                [ text "Try Again" ]
-                devices
-            ]
-            devices
-        ]
+    styled div
+        [ Css.backgroundColor <| Css.rgb 255 255 255 ]
+        []
+        [ text <| Decode.errorToString err ]
 
 
 framing : List (Html.Styled.Html Msg) -> Html.Styled.Html Msg

@@ -211,7 +211,7 @@ type alias Operation =
     , requestBody : Maybe RequestBody
     , responses : Dict String Response
     , callbacks : Dict String Callback
-    , deprecated : Bool
+    , deprecated : Maybe Bool
     , security : Dict String (List String)
     , servers : List Server
     }
@@ -223,7 +223,7 @@ type Parameter
         { name : Maybe String
         , in_ : Maybe ParamIn
 
-        -- Sane as Header from here on - merge the two?
+        -- Same as Header from here on - merge the two?
         , description : Maybe String
         , required : Maybe Bool
         , deprecated : Maybe Bool

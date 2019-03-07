@@ -68,6 +68,73 @@ import OpenApi.Model
         )
 
 
+
+-- Helper Functions
+
+
+httpVerbToString : HttpVerb -> String
+httpVerbToString verb =
+    case verb of
+        Get ->
+            "get"
+
+        Put ->
+            "put"
+
+        Post ->
+            "post"
+
+        Delete ->
+            "delete"
+
+        Options ->
+            "options"
+
+        Head ->
+            "head"
+
+        Patch ->
+            "patch"
+
+        Trace ->
+            "trace"
+
+
+stringToHttpVerb : String -> Maybe HttpVerb
+stringToHttpVerb str =
+    case String.toLower str of
+        "get" ->
+            Just Get
+
+        "put" ->
+            Just Put
+
+        "post" ->
+            Just Post
+
+        "delete" ->
+            Just Delete
+
+        "options" ->
+            Just Options
+
+        "head" ->
+            Just Head
+
+        "patch" ->
+            Just Patch
+
+        "trace" ->
+            Just Trace
+
+        _ ->
+            Nothing
+
+
+
+-- Decoders
+
+
 defaultSpec : OpenApi
 defaultSpec =
     { openapi = OpenApi_3_0_0
@@ -83,6 +150,14 @@ defaultSpec =
 
 
 {-| Decodes a Swagger Spec from json.
+
+todo: servers : List Server
+todo: security : Maybe SecurityRequirement
+todo: tags : List Tag
+todo: externalDocs : Maybe ExternalDocs
+todo: components : Maybe Components
+todo: ext : Dict String String
+
 -}
 openApiDecoder : Decoder OpenApi
 openApiDecoder =
@@ -166,65 +241,11 @@ contactDecoder =
         |> andMap (Decode.maybe (field "email" Decode.string))
 
 
-httpVerbToString : HttpVerb -> String
-httpVerbToString verb =
-    case verb of
-        Get ->
-            "get"
+{-| Decodes URL paths.
 
-        Put ->
-            "put"
+This works by combinind together the 'pathItemPartialDecoder' and the 'httpVerbDecoder'.
 
-        Post ->
-            "post"
-
-        Delete ->
-            "delete"
-
-        Options ->
-            "options"
-
-        Head ->
-            "head"
-
-        Patch ->
-            "patch"
-
-        Trace ->
-            "trace"
-
-
-stringToHttpVerb : String -> Maybe HttpVerb
-stringToHttpVerb str =
-    case String.toLower str of
-        "get" ->
-            Just Get
-
-        "put" ->
-            Just Put
-
-        "post" ->
-            Just Post
-
-        "delete" ->
-            Just Delete
-
-        "options" ->
-            Just Options
-
-        "head" ->
-            Just Head
-
-        "patch" ->
-            Just Patch
-
-        "trace" ->
-            Just Trace
-
-        _ ->
-            Nothing
-
-
+-}
 pathItemDecoder : Decoder PathItem
 pathItemDecoder =
     Decode.map2
@@ -240,6 +261,9 @@ pathItemDecoder =
 This is because the operations are not supplied as a single field in the JSON,
 but as fields named 'get', 'put', etc. Decoding the operations is done as a seperate
 pass.
+
+todo: servers : List Server
+todo: parameters : List Parameter
 
 -}
 pathItemPartialDecoder : Decoder PathItem
@@ -257,16 +281,6 @@ pathItemPartialDecoder =
         |> andMap (Decode.maybe (field "ref" Decode.string))
         |> andMap (Decode.maybe (field "summary" Decode.string))
         |> andMap (Decode.maybe (field "description" Decode.string))
-
-
-
--- { ref : Maybe String
--- , summary : Maybe String
--- , description : Maybe String
--- , operations : Dict HttpVerb Operation
--- , servers : List Server
--- , parameters : List Parameter
--- }
 
 
 {-| Decodes just the HTTP operations from a PathItem.
@@ -296,36 +310,93 @@ httpVerbDecoder =
         |> Decode.map extractOperations
 
 
+{-| Decodes a description of an operation on an endpoint by an HTTP verb.
+
+todo: externalDocs : Maybe ExternalDocs
+todo: requestBody : Maybe RequestBody
+todo: responses : Dict String Response
+todo: callbacks : Dict String Callback
+todo: security : Dict String (List String)
+
+-}
 operationDecoder : Decoder Operation
 operationDecoder =
     Decode.succeed
-        { tags = []
-        , summary = Nothing
-        , description = Nothing
-        , externalDocs = Nothing
-        , operationId = Nothing
-        , parameters = []
-        , requestBody = Nothing
-        , responses = Dict.empty
-        , callbacks = Dict.empty
-        , deprecated = False
-        , security = Dict.empty
-        , servers = []
-        }
+        (\tags summary description operationId parameters deprecated ->
+            { tags = tags
+            , summary = summary
+            , description = description
+            , externalDocs = Nothing
+            , operationId = operationId
+            , parameters = parameters
+            , requestBody = Nothing
+            , responses = Dict.empty
+            , callbacks = Dict.empty
+            , deprecated = deprecated
+            , security = Dict.empty
+            , servers = []
+            }
+        )
+        |> andMap (field "tags" (Decode.list Decode.string))
+        |> andMap (Decode.maybe (field "summary" Decode.string))
+        |> andMap (Decode.maybe (field "description" Decode.string))
+        |> andMap (Decode.maybe (field "operationId" Decode.string))
+        |> andMap (field "parameters" (Decode.list parameterDecoder))
+        |> andMap (Decode.maybe (field "deprecated" Decode.bool))
+
+
+parameterDecoder : Decoder Parameter
+parameterDecoder =
+    Decode.oneOf [ parameterRefDecoder, parameterInlineDecoder ]
+
+
+parameterRefDecoder : Decoder Parameter
+parameterRefDecoder =
+    Decode.succeed
+        (\ref ->
+            ParameterRef { ref = "" }
+        )
+        |> andMap (field "ref" Decode.string)
+
+
+parameterInlineDecoder : Decoder Parameter
+parameterInlineDecoder =
+    Decode.succeed <|
+        ParameterInline
+            { name = Nothing
+            , in_ = Nothing
+            , description = Nothing
+            , required = Nothing
+            , deprecated = Nothing
+            , allowEmptyValue = Nothing
+            , style = Nothing
+            , explode = Nothing
+            , allowReserved = Nothing
+            , schema = Nothing
+            , example = Nothing
+            , examples = Dict.empty
+            , content = Dict.empty
+            }
 
 
 
--- type alias Operation =
---     { tags : List String
---     , summary : Maybe String
---     , description : Maybe String
---     , externalDocs : Maybe ExternalDocs
---     , operationId : Maybe String
---     , parameters : List Parameter
---     , requestBody : Maybe RequestBody
---     , responses : Dict String Response
---     , callbacks : Dict String Callback
---     , deprecated : Bool
---     , security : Dict String (List String)
---     , servers : List Server
---     }
+-- type Parameter
+--     = ParameterRef Reference
+--     | ParameterInline
+--         { name : Maybe String
+--         , in_ : Maybe ParamIn
+--
+--         -- Same as Header from here on - merge the two?
+--         , description : Maybe String
+--         , required : Maybe Bool
+--         , deprecated : Maybe Bool
+--         , allowEmptyValue : Maybe Bool
+--         , style : Maybe Style
+--         , explode : Maybe Bool
+--         , allowReserved : Maybe Bool
+--         , schema : Maybe Schema
+--         , example : Maybe String
+--         , examples : Dict String Example
+--         , content : Dict String MediaType
+--         }
+--
