@@ -65,70 +65,8 @@ import OpenApi.Model
         , Tag
         , Version(..)
         , Xml
+        , stringToHttpVerb
         )
-
-
-
--- Helper Functions
-
-
-httpVerbToString : HttpVerb -> String
-httpVerbToString verb =
-    case verb of
-        Get ->
-            "get"
-
-        Put ->
-            "put"
-
-        Post ->
-            "post"
-
-        Delete ->
-            "delete"
-
-        Options ->
-            "options"
-
-        Head ->
-            "head"
-
-        Patch ->
-            "patch"
-
-        Trace ->
-            "trace"
-
-
-stringToHttpVerb : String -> Maybe HttpVerb
-stringToHttpVerb str =
-    case String.toLower str of
-        "get" ->
-            Just Get
-
-        "put" ->
-            Just Put
-
-        "post" ->
-            Just Post
-
-        "delete" ->
-            Just Delete
-
-        "options" ->
-            Just Options
-
-        "head" ->
-            Just Head
-
-        "patch" ->
-            Just Patch
-
-        "trace" ->
-            Just Trace
-
-        _ ->
-            Nothing
 
 
 

@@ -371,6 +371,25 @@ getApiSpec url =
 -- View for the OpenAPI Spec
 
 
+optionalTextField : String -> (a -> Maybe String) -> a -> Maybe (Html.Styled.Html Msg)
+optionalTextField label exFn rec =
+    let
+        maybeVal =
+            exFn rec
+    in
+    case maybeVal of
+        Nothing ->
+            Nothing
+
+        Just val ->
+            label ++ ": " ++ val |> text |> Just
+
+
+uncurry : (a -> b -> c) -> ( a, b ) -> c
+uncurry fn =
+    \( fst, snd ) -> fn fst snd
+
+
 loadedView : OpenApi.OpenApi -> Html.Styled.Html Msg
 loadedView spec =
     styled div
@@ -386,11 +405,21 @@ pathsView spec =
         (List.map (uncurry pathView) (Dict.toList spec.paths))
 
 
-uncurry : (a -> b -> c) -> ( a, b ) -> c
-uncurry fn =
-    \( fst, snd ) -> fn fst snd
-
-
 pathView : String -> OpenApi.PathItem -> Html.Styled.Html Msg
 pathView url path =
-    div [] [ text url ]
+    div []
+        [ text url
+        , styled div
+            [ Css.margin <| Css.px 10 ]
+            []
+            (Maybe.Extra.values
+                [ optionalTextField "ref" .ref path
+                , optionalTextField "summary" .summary path
+                , optionalTextField "description" .description path
+                ]
+            )
+        , styled div
+            [ Css.margin <| Css.px 10 ]
+            []
+            []
+        ]
