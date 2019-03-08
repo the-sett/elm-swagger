@@ -123,7 +123,8 @@ type Callback
 
 
 type alias Components =
-    { schemas : Dict String Schema
+    { --schemas : Dict String Schema
+      schemas : Dict String JsonSchema.Schema
     , parameters : Dict String Parameter -- Can be ParameterRef? or only inline.
     , requestBodies : Dict String RequestBody
     , responses : Dict String Response

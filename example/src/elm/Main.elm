@@ -18,6 +18,7 @@ import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode
 import Json.Decode.Generic as Json
+import Json.Schema.Definitions as JsonSchema
 import Maybe.Extra
 import OpenApi.Decoder
 import OpenApi.Model as OpenApi
@@ -420,10 +421,17 @@ uncurry fn =
 
 loadedView : OpenApi.OpenApi -> Html.Styled.Html Msg
 loadedView spec =
+    dataModelView spec
+
+
+endpointsView : OpenApi.OpenApi -> Html.Styled.Html Msg
+endpointsView spec =
     styled div
         [ Css.backgroundColor <| Css.rgb 255 255 255 ]
         []
-        [ pathsView spec ]
+        [ h4 [] [ text "Endpoints" ]
+        , pathsView spec
+        ]
 
 
 pathsView : OpenApi.OpenApi -> Html.Styled.Html Msg
@@ -475,4 +483,33 @@ operationView verb op =
                 |> (++) "tags: "
                 |> text
             ]
+        ]
+
+
+dataModelView : OpenApi.OpenApi -> Html.Styled.Html Msg
+dataModelView spec =
+    styled div
+        [ Css.backgroundColor <| Css.rgb 255 255 255 ]
+        []
+        [ h4 [] [ text "Data Model" ]
+        , case spec.components of
+            Just components ->
+                componentsView components
+
+            Nothing ->
+                text "No schemas"
+        ]
+
+
+componentsView : OpenApi.Components -> Html.Styled.Html Msg
+componentsView components =
+    div
+        []
+        (List.map (uncurry schemaView) (Dict.toList components.schemas))
+
+
+schemaView : String -> JsonSchema.Schema -> Html.Styled.Html Msg
+schemaView name schema =
+    div []
+        [ text name
         ]

@@ -29,6 +29,7 @@ import Json.Decode as Decode
         , value
         )
 import Json.Decode.Extra exposing (andMap, withDefault)
+import Json.Schema.Definitions as JsonSchema
 import OpenApi.Model
     exposing
         ( AnyOrExpression(..)
@@ -93,23 +94,24 @@ todo: servers : List Server
 todo: security : Maybe SecurityRequirement
 todo: tags : List Tag
 todo: externalDocs : Maybe ExternalDocs
-todo: components : Maybe Components
 todo: ext : Dict String String
 
 -}
 openApiDecoder : Decoder OpenApi
 openApiDecoder =
     Decode.succeed
-        (\version info paths ->
+        (\version info paths components ->
             { defaultSpec
                 | openapi = version
                 , info = info
                 , paths = paths
+                , components = components
             }
         )
         |> andMap (field "openapi" versionDecoder)
         |> andMap (Decode.maybe (field "info" infoDecoder))
         |> andMap (field "paths" (Decode.dict pathItemDecoder))
+        |> andMap (Decode.maybe (field "components" componentsDecoder))
 
 
 versionDecoder : Decoder Version
@@ -163,6 +165,24 @@ licenseDecoder =
         )
         |> andMap (Decode.maybe (field "name" Decode.string))
         |> andMap (Decode.maybe (field "url" Decode.string))
+
+
+componentsDecoder : Decoder Components
+componentsDecoder =
+    Decode.succeed
+        (\schemas ->
+            { schemas = schemas
+            , parameters = Dict.empty
+            , requestBodies = Dict.empty
+            , responses = Dict.empty
+            , examples = Dict.empty
+            , headers = Dict.empty
+            , links = Dict.empty
+            , callbacks = Dict.empty
+            , securitySchemes = Dict.empty
+            }
+        )
+        |> andMap (field "schemas" (Decode.dict JsonSchema.decoder))
 
 
 contactDecoder : Decoder Contact
