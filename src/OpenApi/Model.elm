@@ -40,7 +40,7 @@ module OpenApi.Model exposing
 import Dict exposing (Dict)
 import Json.Decode
 import Json.Encode as Encode exposing (Value)
-import Json.Schema.Definitions exposing (Schema)
+import Json.Schema.Definitions as JsonSchema
 
 
 
@@ -124,10 +124,10 @@ type Callback
 
 type alias Components =
     { schemas : Dict String Schema
-    , responses : Dict String Response
-    , parameters : Dict String Parameter
-    , examples : Dict String Example
+    , parameters : Dict String Parameter -- Can be ParameterRef? or only inline.
     , requestBodies : Dict String RequestBody
+    , responses : Dict String Response
+    , examples : Dict String Example
     , headers : Dict String Header
     , links : Dict String Link
     , callbacks : Dict String Callback
