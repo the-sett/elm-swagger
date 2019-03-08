@@ -299,8 +299,21 @@ operationDecoder =
         |> andMap (Decode.maybe (field "summary" Decode.string))
         |> andMap (Decode.maybe (field "description" Decode.string))
         |> andMap (Decode.maybe (field "operationId" Decode.string))
-        |> andMap (field "parameters" (Decode.list parameterDecoder))
+        |> andMap (maybeListDecoder (Decode.maybe (field "parameters" (Decode.list parameterDecoder))))
         |> andMap (Decode.maybe (field "deprecated" Decode.bool))
+
+
+maybeListDecoder : Decoder (Maybe (List a)) -> Decoder (List a)
+maybeListDecoder =
+    Decode.map
+        (\maybeList ->
+            case maybeList of
+                Nothing ->
+                    []
+
+                Just list ->
+                    list
+        )
 
 
 parameterDecoder : Decoder Parameter

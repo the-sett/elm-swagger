@@ -427,7 +427,9 @@ loadedView spec =
 endpointsView : OpenApi.OpenApi -> Html.Styled.Html Msg
 endpointsView spec =
     styled div
-        [ Css.backgroundColor <| Css.rgb 255 255 255 ]
+        [ Css.padding <| Css.px 10
+        , Css.backgroundColor <| Css.rgb 255 255 255
+        ]
         []
         [ h4 [] [ text "Endpoints" ]
         , pathsView spec
@@ -489,7 +491,9 @@ operationView verb op =
 dataModelView : OpenApi.OpenApi -> Html.Styled.Html Msg
 dataModelView spec =
     styled div
-        [ Css.backgroundColor <| Css.rgb 255 255 255 ]
+        [ Css.padding <| Css.px 10
+        , Css.backgroundColor <| Css.rgb 255 255 255
+        ]
         []
         [ h4 [] [ text "Data Model" ]
         , case spec.components of
