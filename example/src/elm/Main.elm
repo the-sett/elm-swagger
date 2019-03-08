@@ -382,7 +382,35 @@ optionalTextField label exFn rec =
             Nothing
 
         Just val ->
-            label ++ ": " ++ val |> text |> Just
+            Just <|
+                div []
+                    [ text <| label ++ ": " ++ val
+                    ]
+
+
+optionalFlagField : String -> (a -> Maybe Bool) -> a -> Maybe (Html.Styled.Html Msg)
+optionalFlagField label exFn rec =
+    let
+        maybeVal =
+            exFn rec
+    in
+    case maybeVal of
+        Nothing ->
+            Nothing
+
+        Just val ->
+            Just <|
+                div []
+                    [ text <|
+                        label
+                            ++ ": "
+                            ++ (if val then
+                                    "true"
+
+                                else
+                                    "false"
+                               )
+                    ]
 
 
 uncurry : (a -> b -> c) -> ( a, b ) -> c
@@ -421,5 +449,30 @@ pathView url path =
         , styled div
             [ Css.margin <| Css.px 10 ]
             []
+            (List.map (uncurry operationView) path.operations)
+        ]
+
+
+operationView : OpenApi.HttpVerb -> OpenApi.Operation -> Html.Styled.Html Msg
+operationView verb op =
+    div []
+        [ text <| OpenApi.httpVerbToString verb
+        , styled div
+            [ Css.margin <| Css.px 10 ]
             []
+            (Maybe.Extra.values
+                [ optionalTextField "summary" .summary op
+                , optionalTextField "description" .description op
+                , optionalTextField "operationId" .operationId op
+                , optionalFlagField "deprecated" .deprecated op
+                ]
+            )
+        , styled div
+            [ Css.margin <| Css.px 10 ]
+            []
+            [ List.intersperse ", " op.tags
+                |> List.foldl (++) ""
+                |> (++) "tags: "
+                |> text
+            ]
         ]
