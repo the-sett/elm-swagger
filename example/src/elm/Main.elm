@@ -12,13 +12,15 @@ import Css.Global
 import Dict
 import Grid
 import Html
-import Html.Styled exposing (div, form, h4, img, label, span, styled, text, toUnstyled)
+import Html.Styled exposing (div, form, h4, img, label, pre, span, styled, text, toUnstyled)
 import Html.Styled.Attributes exposing (for, name, src)
 import Html.Styled.Events exposing (onClick, onInput)
 import Http
 import Json.Decode as Decode
 import Json.Decode.Generic as Json
-import Json.Schema.Definitions as JsonSchema
+import Json.Encode
+import Json.Schema.Builder
+import Json.Schema.Definitions
 import Maybe.Extra
 import OpenApi.Decoder
 import OpenApi.Model as OpenApi
@@ -512,8 +514,19 @@ componentsView components =
         (List.map (uncurry schemaView) (Dict.toList components.schemas))
 
 
-schemaView : String -> JsonSchema.Schema -> Html.Styled.Html Msg
+schemaView : String -> Json.Schema.Definitions.Schema -> Html.Styled.Html Msg
 schemaView name schema =
     div []
         [ text name
+        , styled div
+            [ Css.padding <| Css.px 10
+            , Css.fontSize <| Css.px 14
+            ]
+            []
+            [ pre []
+                [ Json.Schema.Definitions.encode schema
+                    |> Json.Encode.encode 4
+                    |> text
+                ]
+            ]
         ]
