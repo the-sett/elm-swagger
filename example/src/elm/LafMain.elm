@@ -7,15 +7,19 @@ import Css.Global
 import Html.Styled exposing (div, input, text, toUnstyled)
 import Html.Styled.Attributes exposing (checked, type_)
 import Html.Styled.Events exposing (onCheck)
+import Http
+import Json.Decode as Decode
 import Layouts.Explore
+import OpenApi.Decoder
 import Pages.DataModel
 import Pages.EndPoints
-import State exposing (Model, Msg(..), Page(..))
+import State exposing (Model, Msg(..), Page(..), ViewState(..))
 import Structure exposing (Template(..))
 import Task
 import TheSett.Debug
 import TheSett.Laf as Laf
 import TheSett.Logo
+import Url exposing (Url)
 
 
 type alias Model =
@@ -26,8 +30,22 @@ type alias Msg =
     State.Msg
 
 
+testSpec =
+    "http://localhost:9071/example-specs/open-banking/payment-initiation-openapi.json"
+
+
+initialModel =
+    { laf = Laf.init
+    , debug = False
+    , page = EndPoints
+    , apiSpecPath = testSpec
+    , apiSpecUrl = Url.fromString testSpec
+    , state = GetSpec
+    }
+
+
 init () =
-    ( { debug = False, page = EndPoints }, Cmd.none )
+    ( initialModel, Cmd.none )
 
 
 subscriptions _ =
@@ -37,11 +55,41 @@ subscriptions _ =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case Debug.log "update" msg of
+        LafMsg lafMsg ->
+            Laf.update LafMsg lafMsg model.laf
+                |> Tuple.mapFirst (\laf -> { model | laf = laf })
+
         Toggle state ->
             ( { model | debug = state }, Cmd.none )
 
         SwitchTo page ->
             ( { model | page = page }, Cmd.none )
+
+        UpdateSpecUrl str ->
+            ( { model | apiSpecPath = str, apiSpecUrl = Url.fromString str }, Cmd.none )
+
+        LoadSpec ->
+            ( model, getApiSpec model.apiSpecPath )
+
+        TryAgain ->
+            ( initialModel, Cmd.none )
+
+        FetchedApiSpec result ->
+            case result of
+                Err err ->
+                    ( { model | state = FetchError err }, Cmd.none )
+
+                Ok val ->
+                    case Decode.decodeString OpenApi.Decoder.openApiDecoder val of
+                        Err err ->
+                            let
+                                _ =
+                                    Debug.log "decode error" <| Decode.errorToString err
+                            in
+                            ( { model | state = DecodeError err }, Cmd.none )
+
+                        Ok spec ->
+                            ( { model | state = Loaded spec }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -52,6 +100,18 @@ jumpToId id =
     Browser.Dom.getElement id
         |> Task.andThen (\info -> Browser.Dom.setViewport 0 (Debug.log "viewport" info).element.y)
         |> Task.attempt (\_ -> NoOp)
+
+
+
+-- HTTP Interaction
+
+
+getApiSpec : String -> Cmd Msg
+getApiSpec url =
+    Http.get
+        { url = url
+        , expect = Http.expectString FetchedApiSpec
+        }
 
 
 view model =
