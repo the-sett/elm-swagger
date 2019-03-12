@@ -88,11 +88,11 @@ topHeader responsive model =
                         [ styled li
                             [ Css.display Css.inline ]
                             []
-                            [ styled a [ Css.padding (Css.px 10) ] [ onClick <| SwitchTo Typography ] [ text "Typography" ] ]
+                            [ styled a [ Css.padding (Css.px 10) ] [ onClick <| SwitchTo EndPoints ] [ text "End Points" ] ]
                         , styled li
                             [ Css.display Css.inline ]
                             []
-                            [ styled a [ Css.padding (Css.px 10) ] [ onClick <| SwitchTo Buttons ] [ text "Buttons" ] ]
+                            [ styled a [ Css.padding (Css.px 10) ] [ onClick <| SwitchTo DataModel ] [ text "Data Model" ] ]
                         ]
                     ]
                 ]

@@ -11,8 +11,8 @@ type Msg
 
 
 type Page
-    = Typography
-    | Buttons
+    = EndPoints
+    | DataModel
 
 
 type alias Model =

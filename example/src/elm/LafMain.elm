@@ -4,12 +4,12 @@ import Body
 import Browser
 import Browser.Dom exposing (getViewportOf, setViewportOf)
 import Css.Global
-import Demo.Buttons
-import Demo.Typography
 import Html.Styled exposing (div, input, text, toUnstyled)
 import Html.Styled.Attributes exposing (checked, type_)
 import Html.Styled.Events exposing (onCheck)
 import Layout
+import Pages.DataModel
+import Pages.EndPoints
 import State exposing (Model, Msg(..), Page(..))
 import Structure exposing (Template(..))
 import Task
@@ -27,7 +27,7 @@ type alias Msg =
 
 
 init () =
-    ( { debug = False, page = Typography }, Cmd.none )
+    ( { debug = False, page = EndPoints }, Cmd.none )
 
 
 subscriptions _ =
@@ -95,8 +95,8 @@ styledView model =
 viewForPage : Page -> Template Msg Model
 viewForPage page =
     case page of
-        Typography ->
-            Demo.Typography.view
+        EndPoints ->
+            Pages.EndPoints.view
 
-        Buttons ->
-            Demo.Buttons.view
+        DataModel ->
+            Pages.DataModel.view

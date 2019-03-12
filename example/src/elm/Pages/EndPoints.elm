@@ -1,4 +1,4 @@
-module Demo.Buttons exposing (view)
+module Pages.EndPoints exposing (view)
 
 import Css
 import Grid

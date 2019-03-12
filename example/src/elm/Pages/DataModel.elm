@@ -1,4 +1,4 @@
-module Demo.Typography exposing (view)
+module Pages.DataModel exposing (view)
 
 import Css
 import Html.Styled exposing (div, h1, h2, h3, h4, li, ol, p, styled, text, ul)
