@@ -7,7 +7,7 @@ import Css.Global
 import Html.Styled exposing (div, input, text, toUnstyled)
 import Html.Styled.Attributes exposing (checked, type_)
 import Html.Styled.Events exposing (onCheck)
-import Layout
+import Layouts.Explore
 import Pages.DataModel
 import Pages.EndPoints
 import State exposing (Model, Msg(..), Page(..))
@@ -71,7 +71,7 @@ styledView model =
             , Laf.fonts
             , Laf.style Laf.devices
             , case
-                Layout.layout <| Body.view (viewForPage model.page)
+                Layouts.Explore.layout <| Body.view (viewForPage model.page)
               of
                 Dynamic fn ->
                     fn Laf.devices model

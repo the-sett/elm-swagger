@@ -1,4 +1,4 @@
-module Layout exposing (layout)
+module Layouts.Explore exposing (layout)
 
 import Css
 import Grid
