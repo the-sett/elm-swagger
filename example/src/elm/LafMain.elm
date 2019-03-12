@@ -5,8 +5,6 @@ import Browser
 import Browser.Dom exposing (getViewportOf, setViewportOf)
 import Css.Global
 import Demo.Buttons
-import Demo.Cards
-import Demo.Grid
 import Demo.Typography
 import Html.Styled exposing (div, input, text, toUnstyled)
 import Html.Styled.Attributes exposing (checked, type_)
@@ -102,9 +100,3 @@ viewForPage page =
 
         Buttons ->
             Demo.Buttons.view
-
-        Grid ->
-            Demo.Grid.view
-
-        Cards ->
-            Demo.Cards.view

@@ -93,14 +93,6 @@ topHeader responsive model =
                             [ Css.display Css.inline ]
                             []
                             [ styled a [ Css.padding (Css.px 10) ] [ onClick <| SwitchTo Buttons ] [ text "Buttons" ] ]
-                        , styled li
-                            [ Css.display Css.inline ]
-                            []
-                            [ styled a [ Css.padding (Css.px 10) ] [ onClick <| SwitchTo Grid ] [ text "Grids" ] ]
-                        , styled li
-                            [ Css.display Css.inline ]
-                            []
-                            [ styled a [ Css.padding (Css.px 10) ] [ onClick <| SwitchTo Cards ] [ text "Cards" ] ]
                         ]
                     ]
                 ]

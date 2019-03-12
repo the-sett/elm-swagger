@@ -13,8 +13,6 @@ type Msg
 type Page
     = Typography
     | Buttons
-    | Grid
-    | Cards
 
 
 type alias Model =
