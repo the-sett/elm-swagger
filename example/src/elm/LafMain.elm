@@ -1,4 +1,4 @@
-module Main exposing (main)
+module LafMain exposing (Model, Msg, init, subscriptions, update, view)
 
 import Body
 import Browser
@@ -20,13 +20,12 @@ import TheSett.Laf as Laf
 import TheSett.Logo
 
 
-main =
-    Browser.document
-        { init = init
-        , subscriptions = subscriptions
-        , update = update
-        , view = \model -> { title = "The Sett LAF", body = [ view model ] }
-        }
+type alias Model =
+    State.Model
+
+
+type alias Msg =
+    State.Msg
 
 
 init () =
@@ -58,6 +57,10 @@ jumpToId id =
 
 
 view model =
+    { title = "The Sett LAF", body = [ body model ] }
+
+
+body model =
     styledView model
         |> toUnstyled
 

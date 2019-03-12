@@ -1,8 +1,8 @@
-module Main exposing (init, update, view, Model, Msg)
+module Main exposing (init, subscriptions, update, view, Model, Msg)
 
 {-| The content editor client top module.
 
-@docs init, update, view, Model, Msg
+@docs init, subscriptions, update, view, Model, Msg
 
 -}
 
@@ -103,6 +103,10 @@ init _ =
     ( initialModel
     , Cmd.none
     )
+
+
+subscriptions _ =
+    Sub.none
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
