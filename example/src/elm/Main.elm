@@ -12,6 +12,7 @@ import Css.Global
 import Dict
 import Grid
 import Html
+import Html.Lazy
 import Html.Styled exposing (div, form, h4, img, label, pre, span, styled, text, toUnstyled)
 import Html.Styled.Attributes exposing (for, name, src)
 import Html.Styled.Events exposing (onClick, onInput)
@@ -153,23 +154,15 @@ paperWhite =
     Css.rgb 248 248 248
 
 
+softGrey =
+    Css.rgb 225 212 214
+
+
 global : List Css.Global.Snippet
 global =
     [ Css.Global.each
         [ Css.Global.html ]
-        [ Css.height <| Css.pct 100
-        , Responsive.deviceStyle devices
-            (\device ->
-                let
-                    headerPx =
-                        Responsive.rhythm 9.5 device
-                in
-                Css.property "background" <|
-                    "linear-gradient(rgb(120, 116, 120) 0%, "
-                        ++ String.fromFloat headerPx
-                        ++ "px, rgb(225, 212, 214) 0px, rgb(208, 212, 214) 100%)"
-            )
-        ]
+        [ Css.backgroundColor softGrey ]
     ]
 
 
@@ -178,7 +171,7 @@ global =
 view : Model -> Browser.Document Msg
 view model =
     { title = "Swagger Example"
-    , body = [ body model ]
+    , body = [ Html.Lazy.lazy body model ]
     }
 
 
