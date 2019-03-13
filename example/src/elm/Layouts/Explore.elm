@@ -71,11 +71,7 @@ topHeader responsive model =
                         ]
                     ]
                     []
-                    [ styled div
-                        [ Responsive.deviceStyles responsive (Responsive.rhythmSplit 0.1 3)
-                        ]
-                        []
-                        [ Svg.Styled.fromUnstyled Logo.logo ]
+                    [-- Can put a logo in here, leaving blank for now.
                     ]
                 , Grid.col
                     [ sm [ Styles.hidden ]
