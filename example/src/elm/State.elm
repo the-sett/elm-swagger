@@ -21,8 +21,14 @@ type Msg
 
 
 type Page
-    = EndPoints
+    = LoadSchema
+    | EndPoints
     | DataModel
+
+
+
+-- | FetchError
+-- | DecodeError
 
 
 type alias Model =

@@ -3,6 +3,8 @@ module LafMain exposing (Model, Msg, init, subscriptions, update, view)
 import Body
 import Browser
 import Browser.Dom exposing (getViewportOf, setViewportOf)
+import Colors
+import Css
 import Css.Global
 import Html.Styled exposing (div, input, text, toUnstyled)
 import Html.Styled.Attributes exposing (checked, type_)
@@ -10,11 +12,13 @@ import Html.Styled.Events exposing (onCheck)
 import Http
 import Json.Decode as Decode
 import Layouts.Explore
+import Layouts.Landing
 import OpenApi.Decoder
 import Pages.DataModel
 import Pages.EndPoints
+import Pages.LoadSchema
 import State exposing (Model, Msg(..), Page(..), ViewState(..))
-import Structure exposing (Template(..))
+import Structure exposing (Layout, Template(..))
 import Task
 import TheSett.Debug
 import TheSett.Laf as Laf
@@ -114,6 +118,18 @@ getApiSpec url =
         }
 
 
+
+-- View
+
+
+global : List Css.Global.Snippet
+global =
+    [ Css.Global.each
+        [ Css.Global.html ]
+        [ Css.backgroundColor Colors.softGrey ]
+    ]
+
+
 view model =
     { title = "The Sett LAF", body = [ body model ] }
 
@@ -126,18 +142,26 @@ body model =
 styledView : Model -> Html.Styled.Html Msg
 styledView model =
     let
-        innerView =
-            [ Laf.responsiveMeta
-            , Laf.fonts
-            , Laf.style Laf.devices
-            , case
-                Layouts.Explore.layout <| Body.view (viewForPage model.page)
-              of
+        pageView =
+            let
+                ( layout, template ) =
+                    viewForPage model.page
+            in
+            case
+                layout <| Body.view template
+            of
                 Dynamic fn ->
                     fn Laf.devices model
 
                 Static fn ->
                     Html.Styled.map never <| fn Laf.devices
+
+        innerView =
+            [ Laf.responsiveMeta
+            , Laf.fonts
+            , Laf.style Laf.devices
+            , Css.Global.global global
+            , pageView
             ]
 
         debugStyle =
@@ -152,11 +176,14 @@ styledView model =
             div [] innerView
 
 
-viewForPage : Page -> Template Msg Model
+viewForPage : Page -> ( Layout Msg Model, Template Msg Model )
 viewForPage page =
     case page of
+        LoadSchema ->
+            ( Layouts.Landing.layout, Pages.LoadSchema.view )
+
         EndPoints ->
-            Pages.EndPoints.view
+            ( Layouts.Explore.layout, Pages.EndPoints.view )
 
         DataModel ->
-            Pages.DataModel.view
+            ( Layouts.Explore.layout, Pages.DataModel.view )

@@ -1,5 +1,6 @@
 module Layouts.Explore exposing (layout)
 
+import Colors
 import Css
 import Grid
 import Html.Styled exposing (Html, a, button, div, input, li, nav, node, styled, text, ul)
@@ -22,7 +23,8 @@ layout template =
 pageBody : Template Msg Model -> Template Msg Model
 pageBody template =
     (\devices model ->
-        div
+        styled div
+            [ Css.backgroundColor Colors.paperWhite ]
             []
             [ debugToggle devices model
             , topHeader devices model
