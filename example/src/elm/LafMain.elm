@@ -20,6 +20,7 @@ import Pages.LoadSchema
 import State exposing (Model, Msg(..), Page(..), ViewState(..))
 import Structure exposing (Layout, Template(..))
 import Task
+import Task.Extra
 import TheSett.Debug
 import TheSett.Laf as Laf
 import TheSett.Logo
@@ -93,7 +94,7 @@ update msg model =
                             ( { model | state = DecodeError err }, Cmd.none )
 
                         Ok spec ->
-                            ( { model | state = Loaded spec }, Cmd.none )
+                            ( { model | state = Loaded spec }, Task.Extra.message <| SwitchTo EndPoints )
 
         NoOp ->
             ( model, Cmd.none )
