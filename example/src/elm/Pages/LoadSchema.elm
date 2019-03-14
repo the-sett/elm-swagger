@@ -25,9 +25,7 @@ view =
     (\devices model ->
         div
             []
-            [ div [ id "load schema" ] []
-            , p [] [ text <| "Load Schema" ]
-            , case model.state of
+            [ case model.state of
                 GetSpec ->
                     loadView model
 
