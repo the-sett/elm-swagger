@@ -106,7 +106,7 @@ schemaView name schema =
     div []
         [ text name
         , styled div
-            [ Css.padding <| Css.px 10
+            [ Css.paddingLeft <| Css.px 10
             , Css.fontSize <| Css.px 14
             ]
             []

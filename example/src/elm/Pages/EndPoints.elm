@@ -103,7 +103,7 @@ pathView url path =
     div []
         [ text url
         , styled div
-            [ Css.margin <| Css.px 10 ]
+            [ Css.paddingLeft <| Css.px 10 ]
             []
             (Maybe.Extra.values
                 [ optionalTextField "ref" .ref path
@@ -112,7 +112,7 @@ pathView url path =
                 ]
             )
         , styled div
-            [ Css.margin <| Css.px 10 ]
+            [ Css.paddingLeft <| Css.px 10 ]
             []
             (List.map (uncurry operationView) path.operations)
         ]
@@ -123,7 +123,7 @@ operationView verb op =
     div []
         [ text <| OpenApi.httpVerbToString verb
         , styled div
-            [ Css.margin <| Css.px 10 ]
+            [ Css.paddingLeft <| Css.px 10 ]
             []
             (Maybe.Extra.values
                 [ optionalTextField "summary" .summary op
@@ -133,7 +133,7 @@ operationView verb op =
                 ]
             )
         , styled div
-            [ Css.margin <| Css.px 10 ]
+            [ Css.paddingLeft <| Css.px 10 ]
             []
             [ List.intersperse ", " op.tags
                 |> List.foldl (++) ""
