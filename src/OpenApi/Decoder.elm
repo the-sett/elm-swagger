@@ -56,7 +56,7 @@ import OpenApi.Model
         , Reference
         , RequestBody(..)
         , Response(..)
-        , Schema(..)
+        , Schema
         , SecurityRequirement
         , SecurityScheme(..)
         , SecurityTokenIn(..)
@@ -362,3 +362,21 @@ parameterInlineDecoder =
             , examples = Dict.empty
             , content = Dict.empty
             }
+
+
+schemaDecoder : Decoder Components
+schemaDecoder =
+    Decode.succeed
+        (\schemas ->
+            { schemas = schemas
+            , parameters = Dict.empty
+            , requestBodies = Dict.empty
+            , responses = Dict.empty
+            , examples = Dict.empty
+            , headers = Dict.empty
+            , links = Dict.empty
+            , callbacks = Dict.empty
+            , securitySchemes = Dict.empty
+            }
+        )
+        |> andMap (field "schemas" (Decode.dict JsonSchema.decoder))
