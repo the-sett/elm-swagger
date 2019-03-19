@@ -15,6 +15,7 @@ type Msg
     | Toggle Bool
     | SwitchTo Page
     | UpdateSpecUrl String
+    | UpdateSearchTerm String
     | LoadSpec
     | TryAgain
     | FetchedApiSpec (Result Http.Error String)
@@ -34,6 +35,7 @@ type alias Model =
     , apiSpecPath : String
     , apiSpecUrl : Maybe Url
     , state : ViewState
+    , searchTerm : String
     }
 
 

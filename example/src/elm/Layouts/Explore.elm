@@ -3,9 +3,9 @@ module Layouts.Explore exposing (layout)
 import Colors
 import Css
 import Grid
-import Html.Styled exposing (Html, a, button, div, input, li, nav, node, styled, text, ul)
+import Html.Styled exposing (Html, a, button, div, form, input, li, nav, node, styled, text, ul)
 import Html.Styled.Attributes exposing (attribute, checked, class, href, id, type_)
-import Html.Styled.Events exposing (onClick)
+import Html.Styled.Events exposing (onClick, onInput)
 import Responsive exposing (ResponsiveStyle)
 import State exposing (Model, Msg(..), Page(..))
 import Structure exposing (Layout, Template(..))
@@ -13,6 +13,7 @@ import Styles exposing (md, sm)
 import Svg.Styled
 import TheSett.Laf as Laf exposing (wrapper)
 import TheSett.Logo as Logo
+import TheSett.Textfield as Textfield
 
 
 layout : Layout Msg Model
@@ -77,7 +78,7 @@ topHeader responsive model =
                     ]
                 , Grid.col
                     [ sm [ Styles.hidden ]
-                    , md [ Styles.visible, Grid.columns 10, Grid.center, Styles.styles [ Css.textAlign Css.center ] ]
+                    , md [ Styles.visible, Grid.columns 6, Grid.center, Styles.styles [ Css.textAlign Css.center ] ]
                     ]
                     []
                     [ styled ul
@@ -91,6 +92,23 @@ topHeader responsive model =
                             [ Css.display Css.inline ]
                             []
                             [ styled a [ Css.padding (Css.px 10) ] [ onClick <| SwitchTo DataModel ] [ text "Data Model" ] ]
+                        ]
+                    ]
+                , Grid.col
+                    [ sm [ Styles.hidden ]
+                    , md [ Styles.visible, Grid.columns 4, Grid.center, Styles.styles [ Css.textAlign Css.center ] ]
+                    ]
+                    []
+                    [ form []
+                        [ Textfield.text
+                            LafMsg
+                            [ 1 ]
+                            model.laf
+                            [ Textfield.value model.searchTerm ]
+                            [ onInput UpdateSearchTerm
+                            ]
+                            [ text "Search" ]
+                            responsive
                         ]
                     ]
                 ]
