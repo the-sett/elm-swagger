@@ -1,0 +1,1175 @@
+{
+  "swagger": "2.0",
+  "tags": [
+    {
+      "name": "Token Service"
+    },
+    {
+      "name": "Batch Service"
+    },
+    {
+      "name": "Webhook Service"
+    },
+    {
+      "name": "Account Service"
+    },
+    {
+      "name": "User Service"
+    },
+    {
+      "name": "Version Service"
+    },
+    {
+      "name": "Transaction Service"
+    }
+  ],
+  "paths": {
+    "/connector/batch": {
+      "post": {
+        "tags": [
+          "Batch Service"
+        ],
+        "summary": "Ingest transactions",
+        "description": "Takes historical or real time transactions together with an account.",
+        "operationId": "ingestTransactionsBatch",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Batch of Ingest Transaction entities.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateTransactionBatch"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/TransactionBatchResponse"
+            }
+          },
+          "410": {
+            "description": "Transaction has already been deleted."
+          },
+          "400": {
+            "description": "The payload does not pass validation, or the specified account does not exist."
+          },
+          "401": {
+            "description": "User not found, has no credentials, or has more than one set of credentials."
+          },
+          "412": {
+            "description": "Could not find any accounts for the user."
+          },
+          "409": {
+            "description": "Transaction already exists."
+          }
+        }
+      }
+    },
+    "/connector/users": {
+      "post": {
+        "tags": [
+          "User Service"
+        ],
+        "summary": "Activate a user",
+        "description": "Activates a user.",
+        "operationId": "createUser",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The user",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserEntity"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "The payload does not pass validation."
+          },
+          "204": {
+            "description": "User activated."
+          },
+          "404": {
+            "description": "The market does not exist."
+          },
+          "409": {
+            "description": "User already exists."
+          }
+        }
+      }
+    },
+    "/connector/users/{externalUserId}": {
+      "put": {
+        "tags": [
+          "User Service"
+        ],
+        "summary": "Update a user",
+        "description": "Updates a user.",
+        "operationId": "updateUser",
+        "parameters": [
+          {
+            "name": "externalUserId",
+            "in": "path",
+            "description": "Persistent identifier for the user.",
+            "required": true,
+            "type": "string",
+            "x-example": "2ce1f090a9304f13a15458d480f8a85d"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The user",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UserEntity"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "The payload does not pass validation."
+          },
+          "401": {
+            "description": "User not found."
+          },
+          "204": {
+            "description": "User updated."
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "User Service"
+        ],
+        "summary": "Delete a user",
+        "description": "Deletes a user.",
+        "operationId": "deleteUser",
+        "parameters": [
+          {
+            "name": "externalUserId",
+            "in": "path",
+            "description": "Persistent identifier for the user.",
+            "required": true,
+            "type": "string",
+            "x-example": "2ce1f090a9304f13a15458d480f8a85d"
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "User not found."
+          },
+          "204": {
+            "description": "User deleted."
+          }
+        }
+      }
+    },
+    "/connector/users/{externalUserId}/accounts": {
+      "post": {
+        "tags": [
+          "Account Service"
+        ],
+        "summary": "Ingest accounts",
+        "description": "Takes a list of accounts and the corresponding user ID.",
+        "operationId": "createAccounts",
+        "parameters": [
+          {
+            "name": "externalUserId",
+            "in": "path",
+            "description": "Persistent identifier for the user.",
+            "required": true,
+            "type": "string",
+            "x-example": "2ce1f090a9304f13a15458d480f8a85d"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The accounts.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AccountListEntity"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "The payload does not pass validation."
+          },
+          "401": {
+            "description": "User not found, has no credentials, or has more than one set of credentials."
+          },
+          "204": {
+            "description": "Accounts created."
+          },
+          "409": {
+            "description": "Account already exists."
+          }
+        }
+      }
+    },
+    "/connector/users/{externalUserId}/accounts/{externalAccountId}": {
+      "delete": {
+        "tags": [
+          "Account Service"
+        ],
+        "summary": "Delete account",
+        "description": "Deletes the account with the given account ID.",
+        "operationId": "deleteAccount",
+        "parameters": [
+          {
+            "name": "externalUserId",
+            "in": "path",
+            "description": "Persistent identifier for the user.",
+            "required": true,
+            "type": "string",
+            "x-example": "2ce1f090a9304f13a15458d480f8a85d"
+          },
+          {
+            "name": "externalAccountId",
+            "in": "path",
+            "description": "Persistent identifier for the account.",
+            "required": true,
+            "type": "string",
+            "x-example": "2d3bd65493b549e1927d97a2d0683ab9"
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "User not found, has no credentials, or has more than one set of credentials."
+          },
+          "204": {
+            "description": "Account deleted."
+          }
+        }
+      }
+    },
+    "/connector/users/{externalUserId}/transactions": {
+      "post": {
+        "tags": [
+          "Transaction Service"
+        ],
+        "summary": "Ingest transactions",
+        "description": "Takes historical or real time transactions together with an account.",
+        "operationId": "ingestTransactions",
+        "parameters": [
+          {
+            "name": "externalUserId",
+            "in": "path",
+            "description": "Persistent identifier for the user.",
+            "required": true,
+            "type": "string",
+            "x-example": "2ce1f090a9304f13a15458d480f8a85d"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Container of account and transactions.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateTransactionAccountContainer"
+            }
+          }
+        ],
+        "responses": {
+          "410": {
+            "description": "Transaction has already been deleted."
+          },
+          "400": {
+            "description": "The payload does not pass validation, or the specified account does not exist."
+          },
+          "412": {
+            "description": "Could not find any accounts for the user."
+          },
+          "401": {
+            "description": "User not found."
+          },
+          "204": {
+            "description": "Transactions ingested."
+          },
+          "409": {
+            "description": "Transaction already exists."
+          }
+        }
+      }
+    },
+    "/connector/users/{externalUserId}/transactions/delete": {
+      "post": {
+        "tags": [
+          "Transaction Service"
+        ],
+        "summary": "Delete transactions",
+        "description": "Removes transactions. When deleting transactions, it's only the externalId of each transaction that is necessary.",
+        "operationId": "deleteTransactions",
+        "parameters": [
+          {
+            "name": "externalUserId",
+            "in": "path",
+            "description": "Persistent identifier for the user.",
+            "required": true,
+            "type": "string",
+            "x-example": "2ce1f090a9304f13a15458d480f8a85d"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Container of account and transactions.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/DeleteTransactionAccountsContainer"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "The payload does not pass validation, or the specified account does not exist."
+          },
+          "401": {
+            "description": "User not found."
+          },
+          "204": {
+            "description": "Transactions deleted."
+          },
+          "404": {
+            "description": "Transaction not found."
+          }
+        }
+      }
+    },
+    "/connector/users/{externalUserId}/transactions/{externalTransactionId}": {
+      "put": {
+        "tags": [
+          "Transaction Service"
+        ],
+        "summary": "Update transactions",
+        "description": "Updates a single transaction related to an account.",
+        "operationId": "updateTransactions",
+        "parameters": [
+          {
+            "name": "externalUserId",
+            "in": "path",
+            "description": "Persistent identifier for the user.",
+            "required": true,
+            "type": "string",
+            "x-example": "2ce1f090a9304f13a15458d480f8a85d"
+          },
+          {
+            "name": "externalTransactionId",
+            "in": "path",
+            "description": "Persistent identifier for the transaction.",
+            "required": true,
+            "type": "string",
+            "x-example": "40dc04e5353547378c84f34ffc88f853"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Container of account and transactions",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateTransactionAccountContainer"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "The payload does not pass validation, or the specified account does not exist."
+          },
+          "401": {
+            "description": "User not found."
+          },
+          "204": {
+            "description": "Transactions updated."
+          },
+          "404": {
+            "description": "Transaction not found."
+          }
+        }
+      }
+    },
+    "/connector/v2/tokens/generate": {
+      "post": {
+        "tags": [
+          "Token Service"
+        ],
+        "summary": "Generate token",
+        "description": "Generates a token that can be used to validate an end-user to the Tink services.",
+        "operationId": "generateToken",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Token generation request",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GenerateTokenRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/GenerateTokenResponse"
+            }
+          }
+        }
+      }
+    },
+    "/connector/webhooks": {
+      "get": {
+        "tags": [
+          "Webhook Service"
+        ],
+        "summary": "Get all registered webhooks.",
+        "description": "Returns an object with a list of all the registered webhooks.",
+        "operationId": "getWebhooks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Webhooks returned in response."
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Webhook Service"
+        ],
+        "summary": "Set up a webhook.",
+        "description": "Set up a new webhook for all users, giving the possibility to get pushed updates for certain events. The webhook will automatically concern both old and new users.",
+        "operationId": "createWebhook",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "The webhook request.",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WebhookEntity"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "The payload does not pass validation, URL is invalid or does not use HTTPS."
+          },
+          "204": {
+            "description": "Webhook created."
+          }
+        }
+      }
+    },
+    "/connector/webhooks/{id}": {
+      "delete": {
+        "tags": [
+          "Webhook Service"
+        ],
+        "summary": "Delete a webhook.",
+        "description": "",
+        "operationId": "deleteWebhook",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Internal Tink ID for the webhook.",
+            "required": true,
+            "type": "string",
+            "x-example": "2ce1f090a9304f13a15458d480f8a85d"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Webhook deleted."
+          },
+          "404": {
+            "description": "Could not find the webhook."
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "tags": [
+          "Version Service"
+        ],
+        "summary": "Get the version",
+        "description": "Gets the current version (build) of the application",
+        "operationId": "getVersion",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/VersionResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "VersionResponse": {
+      "type": "object",
+      "required": [
+        "commit",
+        "date",
+        "version"
+      ],
+      "properties": {
+        "version": {
+          "type": "string",
+          "example": "4513",
+          "description": "The version of the build"
+        },
+        "commit": {
+          "type": "string",
+          "example": "e764d0eed748d6c137c30fc94c7e17544d101ff3",
+          "description": "The last commit of the build"
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "1455740874875",
+          "description": "The date of the build"
+        }
+      }
+    },
+    "CreateTransactionAccountContainer": {
+      "type": "object",
+      "required": [
+        "transactionAccounts",
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "REAL_TIME",
+          "description": "Indicating if this a historical batch of transactions or a real time transaction.",
+          "enum": [
+            "REAL_TIME",
+            "HISTORICAL",
+            "BATCH"
+          ]
+        },
+        "transactionAccounts": {
+          "type": "array",
+          "description": "The transaction accounts. All accounts accumulated may contain a maximum of 2500 transactions per request.",
+          "items": {
+            "$ref": "#/definitions/CreateTransactionAccountEntity"
+          }
+        }
+      }
+    },
+    "DeleteTransactionAccountEntity": {
+      "type": "object",
+      "required": [
+        "balance",
+        "externalId",
+        "transactions"
+      ],
+      "properties": {
+        "balance": {
+          "type": "number",
+          "format": "double",
+          "example": 7000.0,
+          "description": "The balance of the account for the time of the last transaction in the list."
+        },
+        "reservedAmount": {
+          "type": "number",
+          "format": "double",
+          "example": 2000.0,
+          "description": "The reserved amount of the account for the time of the last transaction in the list."
+        },
+        "externalId": {
+          "type": "string",
+          "example": "2d3bd65493b549e1927d97a2d0683ab9",
+          "description": "Persistent identifier for the account the transaction belong to."
+        },
+        "transactions": {
+          "type": "array",
+          "description": "The transaction list.",
+          "items": {
+            "$ref": "#/definitions/DeleteTransactionEntity"
+          }
+        },
+        "payload": {
+          "type": "object",
+          "example": "{}",
+          "description": "The payload property can include arbitrary metadata provided by the financial institution in question that can be used either for deep-linking back to the app of the financial institution, for displaying additional information about the account, or for backend purposes such as automatic categorization improvement, etc. The format is key-value, where key is a String and value any object.",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "CreateTransactionBatch": {
+      "type": "object",
+      "required": [
+        "ingestEntities"
+      ],
+      "properties": {
+        "ingestEntities": {
+          "type": "array",
+          "description": "The batch entities. May contain a maximum of 2500 entities per request.",
+          "items": {
+            "$ref": "#/definitions/IngestTransactionEntity"
+          }
+        },
+        "withinLimit": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "DeleteTransactionEntity": {
+      "type": "object",
+      "required": [
+        "externalId"
+      ],
+      "properties": {
+        "externalId": {
+          "type": "string",
+          "example": "40dc04e5353547378c84f34ffc88f853",
+          "description": "Persistent identifier for the transaction."
+        }
+      }
+    },
+    "GenerateTokenResponse": {
+      "type": "object",
+      "required": [
+        "token"
+      ],
+      "properties": {
+        "token": {
+          "type": "string",
+          "example": "abcdefghijk.lmnopqrstuvwxyz.0123ABC789-_",
+          "description": "User access token."
+        },
+        "expiry": {
+          "type": "integer",
+          "format": "int64",
+          "example": 762273900000,
+          "description": "Timestamp for the expiration of the returned token."
+        }
+      }
+    },
+    "AccountListEntity": {
+      "type": "object",
+      "required": [
+        "accounts"
+      ],
+      "properties": {
+        "accounts": {
+          "type": "array",
+          "description": "The accounts.",
+          "items": {
+            "$ref": "#/definitions/AccountEntity"
+          }
+        }
+      }
+    },
+    "GenerateTokenRequest": {
+      "type": "object",
+      "required": [
+        "scopes",
+        "userId"
+      ],
+      "properties": {
+        "userId": {
+          "type": "string",
+          "example": "2ce1f090a9304f13a15458d480f8a85d",
+          "description": "Persistent identifier for the user."
+        },
+        "scopes": {
+          "type": "array",
+          "example": "[\"transactions:read\"]",
+          "description": "Set of scopes which the token is supposed to be generated for.",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "ttl": {
+          "type": "integer",
+          "format": "int32",
+          "example": 10800,
+          "description": "Time to live for generated token in seconds (max 3 hours).",
+          "minimum": 0.0,
+          "maximum": 10800.0
+        },
+        "origin": {
+          "type": "string",
+          "example": "ABC1",
+          "description": "(Optional) Identifier for the external service that sent the token generation request.",
+          "pattern": "^[a-zA-Z0-9]{0,4}$"
+        }
+      }
+    },
+    "AccountEntity": {
+      "type": "object",
+      "required": [
+        "balance",
+        "externalId",
+        "name",
+        "number",
+        "type"
+      ],
+      "properties": {
+        "availableCredit": {
+          "type": "number",
+          "format": "double",
+          "example": 20000.0,
+          "description": "The available credit of the account."
+        },
+        "balance": {
+          "type": "number",
+          "format": "double",
+          "example": 7000.0,
+          "description": "The balance of the account."
+        },
+        "reservedAmount": {
+          "type": "number",
+          "format": "double",
+          "example": 2000.0,
+          "description": "The currently reserved amount of the account."
+        },
+        "externalId": {
+          "type": "string",
+          "example": "2d3bd65493b549e1927d97a2d0683ab9",
+          "description": "Persistent identifier for the account."
+        },
+        "name": {
+          "type": "string",
+          "example": "Enkla sparkontot",
+          "description": "The account name."
+        },
+        "number": {
+          "type": "string",
+          "example": "52670208126",
+          "description": "The account number."
+        },
+        "payload": {
+          "type": "object",
+          "example": "{}",
+          "description": "The payload property can include arbitrary metadata provided by the financial institution in question that can be used either for deep-linking back to the app by the financial institution, for displaying additional information about the account, etc. The format is key-value, where key is a String and value any object.",
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "type": {
+          "type": "string",
+          "example": "CREDIT_CARD",
+          "description": "The account type.",
+          "enum": [
+            "CHECKING",
+            "SAVINGS",
+            "INVESTMENT",
+            "MORTGAGE",
+            "CREDIT_CARD",
+            "LOAN",
+            "PENSION",
+            "OTHER",
+            "EXTERNAL"
+          ]
+        },
+        "flags": {
+          "type": "array",
+          "example": "[\"MANDATE\"]",
+          "description": "A list of flags specifying attributes on an account",
+          "items": {
+            "type": "string",
+            "enum": [
+              "BUSINESS",
+              "MANDATE"
+            ]
+          }
+        }
+      }
+    },
+    "UserEntity": {
+      "type": "object",
+      "required": [
+        "externalId",
+        "token"
+      ],
+      "properties": {
+        "externalId": {
+          "type": "string",
+          "example": "2ce1f090a9304f13a15458d480f8a85d",
+          "description": "Persistent identifier for the user."
+        },
+        "token": {
+          "type": "string",
+          "example": "9ac7f1611519afa1a66488ad11fda19a",
+          "description": "Access token for the user. This is required later as authentication when fetching data for the user."
+        },
+        "market": {
+          "type": "string",
+          "example": "SE",
+          "description": "Market specific code for the user as a ISO 3166-1 country code.",
+          "enum": [
+            "AT",
+            "AU",
+            "BE",
+            "BG",
+            "BR",
+            "CA",
+            "CY",
+            "CZ",
+            "DE",
+            "DK",
+            "EE",
+            "ES",
+            "FI",
+            "FR",
+            "GB",
+            "GR",
+            "HR",
+            "HU",
+            "IE",
+            "IN",
+            "IT",
+            "LU",
+            "LV",
+            "MT",
+            "NL",
+            "NO",
+            "NZ",
+            "PL",
+            "PT",
+            "RO",
+            "SE",
+            "SG",
+            "SI",
+            "SK",
+            "UK",
+            "US"
+          ]
+        },
+        "locale": {
+          "type": "string",
+          "example": "en_US",
+          "description": "Set locale for the user. Defaults to default locale for the user's market."
+        },
+        "blocked": {
+          "type": "boolean",
+          "description": "Set to either block or unblock the user.",
+          "default": false
+        }
+      }
+    },
+    "UpdateTransactionAccountEntity": {
+      "type": "object",
+      "required": [
+        "balance",
+        "transactions"
+      ],
+      "properties": {
+        "balance": {
+          "type": "number",
+          "format": "double",
+          "example": 7000.0,
+          "description": "The balance of the account for the time of the last transaction in the list."
+        },
+        "reservedAmount": {
+          "type": "number",
+          "format": "double",
+          "example": 2000.0,
+          "description": "The reserved amount of the account for the time of the last transaction in the list."
+        },
+        "externalId": {
+          "type": "string",
+          "example": "2d3bd65493b549e1927d97a2d0683ab9",
+          "description": "Persistent identifier for the account the transaction belongs to. Either this or tinkId must be set."
+        },
+        "tinkId": {
+          "type": "string",
+          "example": "e4a47d5e3d514ca4bd22130bb43c640b",
+          "description": "Persistent identifier for the account the transaction belongs to generated by Tink. Either this or externalId must be set."
+        },
+        "payload": {
+          "type": "object",
+          "example": "{}",
+          "description": "The payload property can include arbitrary metadata provided by the financial institution in question that can be used either for deep-linking back to the app of the financial institution, for displaying additional information about the account, or for backend purposes such as automatic categorization improvement, etc. The format is key-value, where key is a String and value any object.",
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "transactions": {
+          "type": "array",
+          "description": "The list of transactions to update.",
+          "items": {
+            "$ref": "#/definitions/CreateTransactionEntity"
+          }
+        }
+      }
+    },
+    "CreateTransactionAccountEntity": {
+      "type": "object",
+      "required": [
+        "balance",
+        "externalId",
+        "transactions"
+      ],
+      "properties": {
+        "balance": {
+          "type": "number",
+          "format": "double",
+          "example": 7000.0,
+          "description": "The balance of the account for the time of the last transaction in the list."
+        },
+        "reservedAmount": {
+          "type": "number",
+          "format": "double",
+          "example": 2000.0,
+          "description": "The reserved amount of the account for the time of the last transaction in the list."
+        },
+        "externalId": {
+          "type": "string",
+          "example": "2d3bd65493b549e1927d97a2d0683ab9",
+          "description": "Persistent identifier for the account the transaction belongs to."
+        },
+        "transactions": {
+          "type": "array",
+          "description": "The transaction list.",
+          "items": {
+            "$ref": "#/definitions/CreateTransactionEntity"
+          }
+        },
+        "payload": {
+          "type": "object",
+          "example": "{}",
+          "description": "The payload property can include arbitrary metadata provided by the financial institution in question that can be used either for deep-linking back to the app of the financial institution, for displaying additional information about the account, or for backend purposes such as automatic categorization improvement, etc. The format is key-value, where key is a String and value any object.",
+          "additionalProperties": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "IngestTransactionEntity": {
+      "type": "object",
+      "required": [
+        "container",
+        "entityId",
+        "externalUserId"
+      ],
+      "properties": {
+        "entityId": {
+          "type": "string",
+          "example": "2d3bd65493b549e1927d97a2d0683ab9",
+          "description": "An id of this entity. Will only be used to return back to caller."
+        },
+        "externalUserId": {
+          "type": "string",
+          "example": "2d3bd65493b549e1927d97a2d0683ab9",
+          "description": "Persistent external identifier for the user."
+        },
+        "container": {
+          "description": "The create transaction container.",
+          "$ref": "#/definitions/CreateTransactionAccountContainer"
+        }
+      }
+    },
+    "WebhookListEntity": {
+      "type": "object",
+      "properties": {
+        "webhooks": {
+          "type": "array",
+          "description": "A list with the registered webhooks.",
+          "items": {
+            "$ref": "#/definitions/WebhookEntity"
+          }
+        }
+      }
+    },
+    "DeleteTransactionAccountsContainer": {
+      "type": "object",
+      "required": [
+        "transactionAccounts",
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "REAL_TIME",
+          "description": "Indicating if this a historical batch of transactions or a real time transaction.",
+          "enum": [
+            "REAL_TIME",
+            "HISTORICAL",
+            "BATCH"
+          ]
+        },
+        "transactionAccounts": {
+          "type": "array",
+          "description": "The transaction accounts.",
+          "items": {
+            "$ref": "#/definitions/DeleteTransactionAccountEntity"
+          }
+        }
+      }
+    },
+    "IngestTransactionStatus": {
+      "type": "object",
+      "properties": {
+        "entityId": {
+          "type": "string"
+        },
+        "httpStatus": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "response": {
+          "type": "object"
+        }
+      }
+    },
+    "WebhookEntity": {
+      "type": "object",
+      "required": [
+        "events",
+        "secret",
+        "url"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "example": "d3452eed13a0443997257ebe1042813c",
+          "description": "The internal Tink ID of the webhook."
+        },
+        "secret": {
+          "type": "string",
+          "example": "67abc1e08fb64c92b450a13e0876330b",
+          "description": "A secret chosen by the partner. This secret can be used when getting the actual webhook executed back to verify it's a valid one."
+        },
+        "url": {
+          "type": "string",
+          "example": "https://www.clienturl.com/webhook",
+          "description": "The URL that will receive the webhook. It needs to be over https, and Tink needs to have the domain registered in the database."
+        },
+        "events": {
+          "type": "array",
+          "example": "[\"signable-operation:update, transaction:update\"]",
+          "description": "A list of events to register webhooks for.",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "TransactionBatchResponse": {
+      "type": "object",
+      "properties": {
+        "statuses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/IngestTransactionStatus"
+          }
+        }
+      }
+    },
+    "CreateTransactionEntity": {
+      "type": "object",
+      "required": [
+        "amount",
+        "date",
+        "description",
+        "externalId",
+        "type"
+      ],
+      "properties": {
+        "amount": {
+          "type": "number",
+          "format": "double",
+          "example": -98.5,
+          "description": "The debited/credited amount in the currency of the account."
+        },
+        "date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "1455740874875",
+          "description": "Date is when the transaction was executed, not when it was settled (except for scheduled transfers/payments, where the settling date is to be interpreted as the execution date)."
+        },
+        "description": {
+          "type": "string",
+          "example": "Riche Teatergrillen",
+          "description": "A merchant name if possible. If such value is not available, the description that is shown in the transaction list."
+        },
+        "externalId": {
+          "type": "string",
+          "example": "40dc04e5353547378c84f34ffc88f853",
+          "description": "Persistent identifier for the transaction."
+        },
+        "tinkId": {
+          "type": "string",
+          "description": "Ignored for new objects. Used to specify the id as given by Tink on when updating objects without an existing external ID."
+        },
+        "payload": {
+          "type": "object",
+          "example": "{}",
+          "description": "The payload property can include arbitrary metadata provided by the financial institution in question that can be used either for deep-linking back to the app of the financial institution, for displaying additional information about the transaction, or for backend purposes such as automatic categorization improvement, etc. The format is key-value, where key is a String and value any object.",
+          "additionalProperties": {
+            "type": "object"
+          }
+        },
+        "type": {
+          "type": "string",
+          "example": "CREDIT_CARD",
+          "description": "The type of the transaction.",
+          "enum": [
+            "DEFAULT",
+            "CREDIT_CARD",
+            "TRANSFER",
+            "PAYMENT",
+            "WITHDRAWAL"
+          ]
+        },
+        "pending": {
+          "type": "boolean",
+          "description": "If the transaction is pending (reserved) or not (booked).",
+          "default": false
+        }
+      }
+    },
+    "UpdateTransactionAccountContainer": {
+      "type": "object",
+      "required": [
+        "transactionAccounts",
+        "type"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "REAL_TIME",
+          "description": "Indicating if this a historical batch of transactions or a real time transaction.",
+          "enum": [
+            "REAL_TIME"
+          ]
+        },
+        "transactionAccounts": {
+          "type": "array",
+          "description": "The transaction accounts.",
+          "items": {
+            "$ref": "#/definitions/UpdateTransactionAccountEntity"
+          }
+        }
+      }
+    }
+  }
+}
