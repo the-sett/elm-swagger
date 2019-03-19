@@ -17,6 +17,7 @@
             "elm-community/json-extra": "4.0.0",
             "elm-community/maybe-extra": "5.0.0",
             "json-tools/json-schema": "1.0.2",
+            "rluiten/trie": "2.0.3",
             "rtfeldman/elm-css": "15.1.0",
             "the-sett/elm-state-machines": "1.0.1",
             "the-sett/elm-update-helper": "1.4.1",

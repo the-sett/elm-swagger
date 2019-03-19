@@ -26,11 +26,6 @@ type Page
     | DataModel
 
 
-
--- | FetchError
--- | DecodeError
-
-
 type alias Model =
     { laf : Laf.Model
     , debug : Bool
