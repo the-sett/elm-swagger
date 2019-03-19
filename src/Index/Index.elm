@@ -1,6 +1,7 @@
-module Index.Index exposing (Index, empty, fromMaybeString, fromString, fromStrings, union)
+module Index.Index exposing (Index, empty, fromMaybeString, fromString, fromStrings, indexToTrie, union)
 
 import Set exposing (Set)
+import Trie exposing (Trie)
 
 
 type Index
@@ -41,3 +42,11 @@ union : Index -> Index -> Index
 union (Index set1) (Index set2) =
     Set.union set1 set2
         |> Index
+
+
+indexToTrie : Index -> Trie ()
+indexToTrie (Index vals) =
+    Set.foldl
+        (\val accum -> Trie.add ( val, () ) val accum)
+        Trie.empty
+        vals
