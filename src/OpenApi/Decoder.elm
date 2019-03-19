@@ -7,6 +7,7 @@ module OpenApi.Decoder exposing (openApiDecoder)
 -}
 
 import Dict exposing (Dict)
+import Index.Index as Index exposing (Index)
 import Json.Decode as Decode
     exposing
         ( Decoder
@@ -85,6 +86,7 @@ defaultSpec =
     , externalDocs = Nothing
     , components = Nothing
     , ext = Dict.empty
+    , index = Index.empty
     }
 
 
@@ -145,6 +147,7 @@ infoDecoder =
             , contact = contact
             , license = license
             , version = version
+            , index = Index.empty
             }
         )
         |> andMap (Decode.maybe (field "title" Decode.string))
@@ -161,6 +164,7 @@ licenseDecoder =
         (\name url ->
             { name = name
             , url = url
+            , index = Index.empty
             }
         )
         |> andMap (Decode.maybe (field "name" Decode.string))
@@ -180,6 +184,7 @@ componentsDecoder =
             , links = Dict.empty
             , callbacks = Dict.empty
             , securitySchemes = Dict.empty
+            , index = Index.empty
             }
         )
         |> andMap (field "schemas" (Decode.dict JsonSchema.decoder))
@@ -192,6 +197,7 @@ contactDecoder =
             { name = name
             , url = url
             , email = email
+            , index = Index.empty
             }
         )
         |> andMap (Decode.maybe (field "name" Decode.string))
@@ -234,6 +240,7 @@ pathItemPartialDecoder =
             , operations = []
             , servers = []
             , parameters = []
+            , index = Index.empty
             }
         )
         |> andMap (Decode.maybe (field "ref" Decode.string))
@@ -293,6 +300,7 @@ operationDecoder =
             , deprecated = deprecated
             , security = Dict.empty
             , servers = []
+            , index = Index.empty
             }
         )
         |> andMap (field "tags" (Decode.list Decode.string))
@@ -325,7 +333,10 @@ parameterRefDecoder : Decoder Parameter
 parameterRefDecoder =
     Decode.succeed
         (\ref ->
-            ParameterRef { ref = "" }
+            ParameterRef
+                { ref = ""
+                , index = Index.empty
+                }
         )
         |> andMap (field "ref" Decode.string)
 
@@ -361,6 +372,7 @@ parameterInlineDecoder =
             , example = Nothing
             , examples = Dict.empty
             , content = Dict.empty
+            , index = Index.empty
             }
 
 
@@ -377,6 +389,7 @@ schemaDecoder =
             , links = Dict.empty
             , callbacks = Dict.empty
             , securitySchemes = Dict.empty
+            , index = Index.empty
             }
         )
         |> andMap (field "schemas" (Decode.dict JsonSchema.decoder))
