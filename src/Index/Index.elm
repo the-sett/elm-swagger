@@ -1,4 +1,4 @@
-module Index.Index exposing (Index, empty, fromString, fromStrings, union)
+module Index.Index exposing (Index, empty, fromMaybeString, fromString, fromStrings, union)
 
 import Set exposing (Set)
 
@@ -17,6 +17,16 @@ fromString val =
     String.words val
         |> Set.fromList
         |> Index
+
+
+fromMaybeString : Maybe String -> Index
+fromMaybeString maybeVal =
+    case maybeVal of
+        Nothing ->
+            empty
+
+        Just val ->
+            fromString val
 
 
 fromStrings : List String -> Index

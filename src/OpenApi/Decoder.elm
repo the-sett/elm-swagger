@@ -141,13 +141,23 @@ infoDecoder : Decoder Info
 infoDecoder =
     Decode.succeed
         (\title description termsOfService contact license version ->
+            let
+                idx =
+                    Index.fromMaybeString title
+                        |> Index.union (Index.fromMaybeString title)
+                        |> Index.union (Index.fromMaybeString description)
+                        |> Index.union (Index.fromMaybeString termsOfService)
+
+                -- |> Index.union (Index.fromMaybeString contact)
+                -- |> Index.union (Index.fromMaybeString license)
+            in
             { title = title
             , description = description
             , termsOfService = termsOfService
             , contact = contact
             , license = license
             , version = version
-            , index = Index.empty
+            , index = idx
             }
         )
         |> andMap (Decode.maybe (field "title" Decode.string))
@@ -162,9 +172,14 @@ licenseDecoder : Decoder License
 licenseDecoder =
     Decode.succeed
         (\name url ->
+            let
+                idx =
+                    Index.fromMaybeString name
+                        |> Index.union (Index.fromMaybeString url)
+            in
             { name = name
             , url = url
-            , index = Index.empty
+            , index = idx
             }
         )
         |> andMap (Decode.maybe (field "name" Decode.string))
@@ -194,10 +209,16 @@ contactDecoder : Decoder Contact
 contactDecoder =
     Decode.succeed
         (\name url email ->
+            let
+                idx =
+                    Index.fromMaybeString name
+                        |> Index.union (Index.fromMaybeString url)
+                        |> Index.union (Index.fromMaybeString email)
+            in
             { name = name
             , url = url
             , email = email
-            , index = Index.empty
+            , index = idx
             }
         )
         |> andMap (Decode.maybe (field "name" Decode.string))
@@ -214,7 +235,19 @@ pathItemDecoder : Decoder PathItem
 pathItemDecoder =
     Decode.map2
         (\pathItem operations ->
-            { pathItem | operations = operations }
+            let
+                operationIdx =
+                    List.foldl
+                        (\( _, op ) accum ->
+                            Index.union op.index accum
+                        )
+                        Index.empty
+                        operations
+            in
+            { pathItem
+                | operations = operations
+                , index = Index.union pathItem.index operationIdx
+            }
         )
         pathItemPartialDecoder
         httpVerbDecoder
@@ -234,13 +267,19 @@ pathItemPartialDecoder : Decoder PathItem
 pathItemPartialDecoder =
     Decode.succeed
         (\ref summary description ->
+            let
+                idx =
+                    Index.fromMaybeString ref
+                        |> Index.union (Index.fromMaybeString summary)
+                        |> Index.union (Index.fromMaybeString description)
+            in
             { ref = ref
             , summary = summary
             , description = description
             , operations = []
             , servers = []
             , parameters = []
-            , index = Index.empty
+            , index = idx
             }
         )
         |> andMap (Decode.maybe (field "ref" Decode.string))
@@ -288,6 +327,27 @@ operationDecoder : Decoder Operation
 operationDecoder =
     Decode.succeed
         (\tags summary description operationId parameters deprecated ->
+            let
+                paramIdx =
+                    List.foldl
+                        (\param accum ->
+                            case param of
+                                ParameterRef { index } ->
+                                    Index.union index accum
+
+                                ParameterInline { index } ->
+                                    Index.union index accum
+                        )
+                        Index.empty
+                        parameters
+
+                idx =
+                    Index.fromStrings tags
+                        |> Index.union (Index.fromMaybeString summary)
+                        |> Index.union (Index.fromMaybeString description)
+                        |> Index.union (Index.fromMaybeString operationId)
+                        |> Index.union paramIdx
+            in
             { tags = tags
             , summary = summary
             , description = description
@@ -300,7 +360,7 @@ operationDecoder =
             , deprecated = deprecated
             , security = Dict.empty
             , servers = []
-            , index = Index.empty
+            , index = idx
             }
         )
         |> andMap (field "tags" (Decode.list Decode.string))
@@ -334,8 +394,8 @@ parameterRefDecoder =
     Decode.succeed
         (\ref ->
             ParameterRef
-                { ref = ""
-                , index = Index.empty
+                { ref = ref
+                , index = Index.fromString ref
                 }
         )
         |> andMap (field "ref" Decode.string)
