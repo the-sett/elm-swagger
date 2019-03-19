@@ -103,11 +103,23 @@ openApiDecoder : Decoder OpenApi
 openApiDecoder =
     Decode.succeed
         (\version info paths components ->
+            let
+                idx =
+                    Dict.foldl
+                        (\k v accum ->
+                            Index.fromString k
+                                |> Index.union v.index
+                                |> Index.union accum
+                        )
+                        Index.empty
+                        paths
+            in
             { defaultSpec
                 | openapi = version
                 , info = info
                 , paths = paths
                 , components = components
+                , index = idx
             }
         )
         |> andMap (field "openapi" versionDecoder)
