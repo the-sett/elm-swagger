@@ -99,17 +99,15 @@ topHeader responsive model =
                     , md [ Styles.visible, Grid.columns 4, Grid.center, Styles.styles [ Css.textAlign Css.center ] ]
                     ]
                     []
-                    [ form []
-                        [ Textfield.text
-                            LafMsg
-                            [ 1 ]
-                            model.laf
-                            [ Textfield.value model.searchTerm ]
-                            [ onInput UpdateSearchTerm
-                            ]
-                            [ text "Search" ]
-                            responsive
+                    [ Textfield.text
+                        LafMsg
+                        [ 1 ]
+                        model.laf
+                        [ Textfield.value <| Maybe.withDefault "" model.searchTerm ]
+                        [ onInput UpdateSearchTerm
                         ]
+                        [ text "Search" ]
+                        responsive
                     ]
                 ]
             ]

@@ -48,7 +48,7 @@ initialModel =
     , apiSpecPath = testSpec
     , apiSpecUrl = Url.fromString testSpec
     , state = GetSpec
-    , searchTerm = ""
+    , searchTerm = Nothing
     }
 
 
@@ -77,7 +77,17 @@ update msg model =
             ( { model | apiSpecPath = str, apiSpecUrl = Url.fromString str }, Cmd.none )
 
         UpdateSearchTerm str ->
-            ( { model | searchTerm = str }, Cmd.none )
+            let
+                term =
+                    if str == "" then
+                        Nothing
+
+                    else
+                        Just str
+            in
+            ( { model | searchTerm = term }
+            , Cmd.none
+            )
 
         LoadSpec ->
             ( model, getApiSpec model.apiSpecPath )

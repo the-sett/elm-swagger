@@ -3,6 +3,7 @@ module State exposing (Model, Msg(..), Page(..), ViewState(..))
 import Http
 import Json.Decode as Decode
 import OpenApi.Model as OpenApi
+import Set exposing (Set)
 import TheSett.Laf as Laf
 import Trie exposing (Trie)
 import Url exposing (Url)
@@ -35,7 +36,7 @@ type alias Model =
     , apiSpecPath : String
     , apiSpecUrl : Maybe Url
     , state : ViewState
-    , searchTerm : String
+    , searchTerm : Maybe String
     }
 
 
