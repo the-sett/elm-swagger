@@ -19,7 +19,7 @@ view =
         div
             []
             [ case model.state of
-                Loaded api ->
+                Loaded api _ ->
                     dataModelView api
 
                 _ ->

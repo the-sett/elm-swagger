@@ -10,6 +10,7 @@ import Html.Styled exposing (div, input, text, toUnstyled)
 import Html.Styled.Attributes exposing (checked, type_)
 import Html.Styled.Events exposing (onCheck)
 import Http
+import Index.Index as Index exposing (Index)
 import Json.Decode as Decode
 import Layouts.Explore
 import Layouts.Landing
@@ -24,6 +25,7 @@ import Task.Extra
 import TheSett.Debug
 import TheSett.Laf as Laf
 import TheSett.Logo
+import Trie exposing (Trie)
 import Url exposing (Url)
 
 
@@ -94,7 +96,9 @@ update msg model =
                             ( { model | state = DecodeError err }, Cmd.none )
 
                         Ok spec ->
-                            ( { model | state = Loaded spec }, Task.Extra.message <| SwitchTo EndPoints )
+                            ( { model | state = Loaded spec (Index.indexToTrie spec.index) }
+                            , Task.Extra.message <| SwitchTo EndPoints
+                            )
 
         NoOp ->
             ( model, Cmd.none )
