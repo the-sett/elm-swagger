@@ -70,7 +70,7 @@ union (Index index1) (Index index2) =
 
 search : Index -> String -> Bool
 search (Index index) term =
-    Trie.expand term index.trie
+    Trie.expand (String.toLower term) index.trie
         |> List.isEmpty
         |> not
 
@@ -80,7 +80,7 @@ tagsToTrie tags =
     Set.foldl
         (\word accum ->
             List.foldl
-                (\suffix innerAccum -> Trie.add ( word, () ) suffix innerAccum)
+                (\suffix innerAccum -> Trie.add ( word, () ) (String.toLower suffix) innerAccum)
                 accum
                 (suffixes word)
         )
