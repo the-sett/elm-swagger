@@ -21,7 +21,7 @@ view =
         div
             []
             [ case model.state of
-                Loaded api _ ->
+                Loaded api ->
                     endpointsView api
 
                 _ ->

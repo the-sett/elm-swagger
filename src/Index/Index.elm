@@ -1,23 +1,35 @@
-module Index.Index exposing (Index, empty, fromMaybeString, fromString, fromStrings, indexToTrie, union)
+module Index.Index exposing (Index, empty, fromMaybeString, fromString, fromStrings, union)
 
 import Set exposing (Set)
 import Trie exposing (Trie)
 
 
 type Index
-    = Index (Set String)
+    = Index
+        { tags : Set String
+        , trie : Trie ()
+        }
 
 
 empty : Index
 empty =
-    Index Set.empty
+    Index
+        { tags = Set.empty
+        , trie = Trie.empty
+        }
 
 
 fromString : String -> Index
 fromString val =
-    String.words val
-        |> Set.fromList
-        |> Index
+    let
+        words =
+            String.words val
+                |> Set.fromList
+    in
+    Index
+        { tags = words
+        , trie = tagsToTrie words
+        }
 
 
 fromMaybeString : Maybe String -> Index
@@ -32,21 +44,33 @@ fromMaybeString maybeVal =
 
 fromStrings : List String -> Index
 fromStrings vals =
-    List.map String.words vals
-        |> List.concat
-        |> Set.fromList
-        |> Index
+    let
+        words =
+            List.map String.words vals
+                |> List.concat
+                |> Set.fromList
+    in
+    Index
+        { tags = words
+        , trie = tagsToTrie words
+        }
 
 
 union : Index -> Index -> Index
-union (Index set1) (Index set2) =
-    Set.union set1 set2
-        |> Index
+union (Index index1) (Index index2) =
+    let
+        words =
+            Set.union index1.tags index2.tags
+    in
+    Index
+        { tags = words
+        , trie = tagsToTrie words
+        }
 
 
-indexToTrie : Index -> Trie ()
-indexToTrie (Index vals) =
+tagsToTrie : Set String -> Trie ()
+tagsToTrie tags =
     Set.foldl
         (\val accum -> Trie.add ( val, () ) val accum)
         Trie.empty
-        vals
+        tags

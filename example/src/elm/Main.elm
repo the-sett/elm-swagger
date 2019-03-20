@@ -110,7 +110,7 @@ update msg model =
                             ( { model | state = DecodeError err }, Cmd.none )
 
                         Ok spec ->
-                            ( { model | state = Loaded spec (Index.indexToTrie spec.index) }
+                            ( { model | state = Loaded spec }
                             , Task.Extra.message <| SwitchTo EndPoints
                             )
 

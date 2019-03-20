@@ -5,7 +5,6 @@ import Json.Decode as Decode
 import OpenApi.Model as OpenApi
 import Set exposing (Set)
 import TheSett.Laf as Laf
-import Trie exposing (Trie)
 import Url exposing (Url)
 
 
@@ -44,4 +43,4 @@ type ViewState
     = GetSpec
     | FetchError Http.Error
     | DecodeError Decode.Error
-    | Loaded OpenApi.OpenApi (Trie ())
+    | Loaded OpenApi.OpenApi
