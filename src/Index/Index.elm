@@ -68,16 +68,30 @@ union (Index index1) (Index index2) =
         }
 
 
-tagsToTrie : Set String -> Trie ()
-tagsToTrie tags =
-    Set.foldl
-        (\val accum -> Trie.add ( val, () ) val accum)
-        Trie.empty
-        tags
-
-
 search : Index -> String -> Bool
 search (Index index) term =
     Trie.expand term index.trie
         |> List.isEmpty
         |> not
+
+
+tagsToTrie : Set String -> Trie ()
+tagsToTrie tags =
+    Set.foldl
+        (\word accum ->
+            List.foldl
+                (\suffix innerAccum -> Trie.add ( word, () ) suffix innerAccum)
+                accum
+                (suffixes word)
+        )
+        Trie.empty
+        tags
+
+
+suffixes : String -> List String
+suffixes word =
+    List.foldr
+        (\c ( w, acc ) -> ( c :: w, String.fromList (c :: w) :: acc ))
+        ( [], [] )
+        (String.toList word)
+        |> Tuple.second
