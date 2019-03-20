@@ -1,4 +1,4 @@
-module Index.Index exposing (Index, empty, fromMaybeString, fromString, fromStrings, union)
+module Index.Index exposing (Index, empty, fromMaybeString, fromString, fromStrings, search, union)
 
 import Set exposing (Set)
 import Trie exposing (Trie)
@@ -74,3 +74,10 @@ tagsToTrie tags =
         (\val accum -> Trie.add ( val, () ) val accum)
         Trie.empty
         tags
+
+
+search : Index -> String -> Bool
+search (Index index) term =
+    Trie.expand term index.trie
+        |> List.isEmpty
+        |> not

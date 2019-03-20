@@ -6,6 +6,7 @@ import Grid
 import Html.Styled exposing (div, h1, h4, p, styled, text)
 import Html.Styled.Attributes exposing (id)
 import Html.Styled.Lazy exposing (lazy2)
+import Index.Index as Index exposing (Index)
 import Json.Schema.Definitions
 import Maybe.Extra
 import OpenApi.Model as OpenApi
@@ -22,7 +23,7 @@ view =
             []
             [ case model.state of
                 Loaded api ->
-                    endpointsView api
+                    endpointsView model.searchTerm api
 
                 _ ->
                     div [] []
@@ -83,39 +84,52 @@ uncurry fn =
     \( fst, snd ) -> fn fst snd
 
 
-endpointsView : OpenApi.OpenApi -> Html.Styled.Html Msg
-endpointsView spec =
+endpointsView : Maybe String -> OpenApi.OpenApi -> Html.Styled.Html Msg
+endpointsView maybeSearch spec =
     div
         []
-        [ pathsView spec
+        [ pathsView maybeSearch spec
         ]
 
 
-pathsView : OpenApi.OpenApi -> Html.Styled.Html Msg
-pathsView spec =
+pathsView : Maybe String -> OpenApi.OpenApi -> Html.Styled.Html Msg
+pathsView maybeSearch spec =
     div
         []
-        (List.map (uncurry pathView) (Dict.toList spec.paths))
+        (List.map (uncurry (pathView maybeSearch)) (Dict.toList spec.paths))
 
 
-pathView : String -> OpenApi.PathItem -> Html.Styled.Html Msg
-pathView url path =
-    div []
-        [ text url
-        , styled div
-            [ Css.paddingLeft <| Css.px 10 ]
-            []
-            (Maybe.Extra.values
-                [ optionalTextField "ref" .ref path
-                , optionalTextField "summary" .summary path
-                , optionalTextField "description" .description path
-                ]
-            )
-        , styled div
-            [ Css.paddingLeft <| Css.px 10 ]
-            []
-            (List.map (uncurry operationView) path.operations)
-        ]
+pathView : Maybe String -> String -> OpenApi.PathItem -> Html.Styled.Html Msg
+pathView maybeSearch url path =
+    let
+        matches =
+            case maybeSearch of
+                Nothing ->
+                    True
+
+                Just term ->
+                    Index.search path.index term
+    in
+    if matches then
+        div []
+            [ text url
+            , styled div
+                [ Css.paddingLeft <| Css.px 10 ]
+                []
+                (Maybe.Extra.values
+                    [ optionalTextField "ref" .ref path
+                    , optionalTextField "summary" .summary path
+                    , optionalTextField "description" .description path
+                    ]
+                )
+            , styled div
+                [ Css.paddingLeft <| Css.px 10 ]
+                []
+                (List.map (uncurry operationView) path.operations)
+            ]
+
+    else
+        div [] []
 
 
 operationView : OpenApi.HttpVerb -> OpenApi.Operation -> Html.Styled.Html Msg
