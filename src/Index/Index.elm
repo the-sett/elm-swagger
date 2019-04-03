@@ -1,22 +1,17 @@
-module Index.Index exposing (Index, empty, fromMaybeString, fromString, fromStrings, search, union)
+module Index.Index exposing (Index, empty, fromMaybeString, fromString, fromStrings, prepare, search, union)
 
 import Set exposing (Set)
 import Trie exposing (Trie)
 
 
 type Index
-    = Index
-        { tags : Set String
-        , trie : Trie ()
-        }
+    = Builder { tags : Set String }
+    | Index { trie : Trie () }
 
 
 empty : Index
 empty =
-    Index
-        { tags = Set.empty
-        , trie = Trie.empty
-        }
+    Builder { tags = Set.empty }
 
 
 fromString : String -> Index
@@ -26,10 +21,7 @@ fromString val =
             String.words val
                 |> Set.fromList
     in
-    Index
-        { tags = words
-        , trie = tagsToTrie words
-        }
+    Builder { tags = words }
 
 
 fromMaybeString : Maybe String -> Index
@@ -50,29 +42,49 @@ fromStrings vals =
                 |> List.concat
                 |> Set.fromList
     in
-    Index
-        { tags = words
-        , trie = tagsToTrie words
-        }
+    Builder { tags = words }
 
 
 union : Index -> Index -> Index
-union (Index index1) (Index index2) =
-    let
-        words =
-            Set.union index1.tags index2.tags
-    in
-    Index
-        { tags = words
-        , trie = tagsToTrie words
-        }
+union index1 index2 =
+    case ( index1, index2 ) of
+        ( Builder b1, Builder b2 ) ->
+            let
+                words =
+                    Set.union b1.tags b2.tags
+            in
+            Builder { tags = words }
+
+        ( Builder b1, Index _ ) ->
+            Builder b1
+
+        ( Index _, Builder b2 ) ->
+            Builder b2
+
+        ( _, _ ) ->
+            empty
+
+
+prepare : Index -> Index
+prepare index =
+    case index of
+        Builder { tags } ->
+            Index { trie = tagsToTrie tags }
+
+        Index idx ->
+            Index idx
 
 
 search : Index -> String -> Bool
-search (Index index) term =
-    Trie.expand (String.toLower term) index.trie
-        |> List.isEmpty
-        |> not
+search index term =
+    case index of
+        Builder _ ->
+            False
+
+        Index { trie } ->
+            Trie.expand (String.toLower term) trie
+                |> List.isEmpty
+                |> not
 
 
 tagsToTrie : Set String -> Trie ()

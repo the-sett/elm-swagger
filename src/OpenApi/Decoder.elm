@@ -258,7 +258,9 @@ pathItemDecoder =
             in
             { pathItem
                 | operations = operations
-                , index = Index.union pathItem.index operationIdx
+                , index =
+                    Index.union pathItem.index operationIdx
+                        |> Index.prepare
             }
         )
         pathItemPartialDecoder
