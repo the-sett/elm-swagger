@@ -142,14 +142,12 @@ type alias Contact =
     { name : Maybe String
     , url : Maybe String
     , email : Maybe String
-    , index : Index
     }
 
 
 type alias Discriminator =
     { propertyName : Maybe String
     , mapping : Dict String String
-    , index : Index
     }
 
 
@@ -159,7 +157,6 @@ type alias Encoding =
     , style : Maybe Style
     , explode : Maybe Bool
     , allowReserved : Maybe Bool
-    , index : Index
     }
 
 
@@ -170,14 +167,12 @@ type Example
         , description : Maybe String
         , value : Maybe Value
         , externalValue : Maybe String
-        , index : Index
         }
 
 
 type alias ExternalDocs =
     { description : Maybe String
     , url : Maybe String
-    , index : Index
     }
 
 
@@ -195,7 +190,6 @@ type Header
         , example : Maybe String
         , examples : Dict String Example
         , content : Dict String MediaType
-        , index : Index
         }
 
 
@@ -217,14 +211,12 @@ type alias Info =
     , contact : Maybe Contact
     , license : Maybe License
     , version : Maybe String
-    , index : Index
     }
 
 
 type alias License =
     { name : Maybe String
     , url : Maybe String
-    , index : Index
     }
 
 
@@ -237,7 +229,6 @@ type Link
         , requestBody : Maybe AnyOrExpression
         , description : Maybe String
         , server : Maybe Server
-        , index : Index
         }
 
 
@@ -246,7 +237,6 @@ type alias MediaType =
     , example : String
     , examples : Dict String Example
     , encoding : Dict String Encoding
-    , index : Index
     }
 
 
@@ -255,7 +245,6 @@ type alias OAuthFlow =
     , tokenUrl : Maybe String
     , refreshUrl : Maybe String
     , scopes : Dict String String
-    , index : Index
     }
 
 
@@ -264,7 +253,6 @@ type alias OAuthFlows =
     , password : Maybe OAuthFlow
     , clientCredentials : Maybe OAuthFlow
     , authorizationCode : Maybe OAuthFlow
-    , index : Index
     }
 
 
@@ -278,7 +266,6 @@ type alias OpenApi =
     , externalDocs : Maybe ExternalDocs
     , components : Maybe Components
     , ext : Dict String String
-    , index : Index
     }
 
 
@@ -295,7 +282,6 @@ type alias Operation =
     , deprecated : Maybe Bool
     , security : Dict String (List String)
     , servers : List Server
-    , index : Index
     }
 
 
@@ -317,7 +303,6 @@ type Parameter
         , example : Maybe String
         , examples : Dict String Example
         , content : Dict String MediaType
-        , index : Index
         }
 
 
@@ -341,7 +326,6 @@ type alias PathItem =
 
 type alias Reference =
     { ref : String
-    , index : Index
     }
 
 
@@ -351,7 +335,6 @@ type RequestBody
         { description : Maybe String
         , content : Dict String MediaType
         , required : Maybe Bool
-        , index : Index
         }
 
 
@@ -362,7 +345,6 @@ type Response
         , header : Dict String Header
         , content : Dict String MediaType
         , links : Dict String Link
-        , index : Index
         }
 
 
@@ -391,7 +373,6 @@ type alias Schema =
 
 type alias SecurityRequirement =
     { schemes : Dict String (List String)
-    , index : Index
     }
 
 
@@ -406,7 +387,6 @@ type SecurityScheme
         , bearerFormat : Maybe String
         , flows : Maybe OAuthFlows
         , openIdConnectUrl : Maybe String
-        , index : Index
         }
 
 
@@ -420,7 +400,6 @@ type alias Server =
     { url : Maybe String
     , description : Maybe String
     , variables : Dict String ServerVariable
-    , index : Index
     }
 
 
@@ -428,7 +407,6 @@ type alias ServerVariable =
     { enum : List String
     , default : Maybe String
     , description : Maybe String
-    , index : Index
     }
 
 
@@ -446,7 +424,6 @@ type alias Tag =
     { name : Maybe String
     , description : Maybe String
     , externalDocs : Maybe ExternalDocs
-    , index : Index
     }
 
 
@@ -462,5 +439,4 @@ type alias Xml =
     , prefix : Maybe String
     , attribute : Maybe Bool
     , wrapped : Maybe Bool
-    , index : Index
     }

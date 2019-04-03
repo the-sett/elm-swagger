@@ -1,4 +1,18 @@
-module Index.Index exposing (Index, empty, fromMaybeString, fromString, fromStrings, prepare, search, union)
+module Index.Index exposing
+    ( Index
+    , empty, addString, addStrings, addMaybeString, addIndex
+    , prepare, search
+    )
+
+{-| Index provides an efficiently searchable indexing of strings.
+
+@docs Index
+
+@docs empty, addString, addStrings, addMaybeString, addIndex
+
+@docs prepare, search
+
+-}
 
 import Set exposing (Set)
 import Trie exposing (Trie)
@@ -9,13 +23,17 @@ type Index
     | Index { trie : Trie () }
 
 
+
+-- Index builders.
+
+
 empty : Index
 empty =
     Builder { tags = Set.empty }
 
 
-fromString : String -> Index
-fromString val =
+addString : String -> Index
+addString val =
     let
         words =
             String.words val
@@ -24,18 +42,18 @@ fromString val =
     Builder { tags = words }
 
 
-fromMaybeString : Maybe String -> Index
-fromMaybeString maybeVal =
+addMaybeString : Maybe String -> Index
+addMaybeString maybeVal =
     case maybeVal of
         Nothing ->
             empty
 
         Just val ->
-            fromString val
+            addString val
 
 
-fromStrings : List String -> Index
-fromStrings vals =
+addStrings : List String -> Index
+addStrings vals =
     let
         words =
             List.map String.words vals
@@ -45,8 +63,8 @@ fromStrings vals =
     Builder { tags = words }
 
 
-union : Index -> Index -> Index
-union index1 index2 =
+addIndex : Index -> Index -> Index
+addIndex index1 index2 =
     case ( index1, index2 ) of
         ( Builder b1, Builder b2 ) ->
             let
@@ -63,6 +81,10 @@ union index1 index2 =
 
         ( _, _ ) ->
             empty
+
+
+
+-- Index preparation and search.
 
 
 prepare : Index -> Index
@@ -85,6 +107,10 @@ search index term =
             Trie.expand (String.toLower term) trie
                 |> List.isEmpty
                 |> not
+
+
+
+-- Helper functions.
 
 
 tagsToTrie : Set String -> Trie ()

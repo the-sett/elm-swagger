@@ -86,7 +86,6 @@ defaultSpec =
     , externalDocs = Nothing
     , components = Nothing
     , ext = Dict.empty
-    , index = Index.empty
     }
 
 
@@ -107,19 +106,18 @@ openApiDecoder =
                 idx =
                     Dict.foldl
                         (\k v accum ->
-                            Index.fromString k
-                                |> Index.union v.index
-                                |> Index.union accum
+                            Index.addString k
+                                |> Index.addIndex v.index
+                                |> Index.addIndex accum
                         )
                         Index.empty
                         paths
             in
             { defaultSpec
                 | openapi = version
-                , info = info
+                , info = Maybe.map Tuple.first info
                 , paths = paths
                 , components = components
-                , index = idx
             }
         )
         |> andMap (field "openapi" versionDecoder)
@@ -149,28 +147,29 @@ versionDecoder =
         |> andThen toVersion
 
 
-infoDecoder : Decoder Info
+infoDecoder : Decoder ( Info, Index )
 infoDecoder =
     Decode.succeed
         (\title description termsOfService contact license version ->
             let
                 idx =
-                    Index.fromMaybeString title
-                        |> Index.union (Index.fromMaybeString title)
-                        |> Index.union (Index.fromMaybeString description)
-                        |> Index.union (Index.fromMaybeString termsOfService)
+                    Index.addMaybeString title
+                        |> Index.addIndex (Index.addMaybeString title)
+                        |> Index.addIndex (Index.addMaybeString description)
+                        |> Index.addIndex (Index.addMaybeString termsOfService)
 
-                -- |> Index.union (Index.fromMaybeString contact)
-                -- |> Index.union (Index.fromMaybeString license)
+                -- |> Index.addIndex (Index.addMaybeString contact)
+                -- |> Index.addIndex (Index.addMaybeString license)
             in
-            { title = title
-            , description = description
-            , termsOfService = termsOfService
-            , contact = contact
-            , license = license
-            , version = version
-            , index = idx
-            }
+            ( { title = title
+              , description = description
+              , termsOfService = termsOfService
+              , contact = Maybe.map Tuple.first contact
+              , license = Maybe.map Tuple.first license
+              , version = version
+              }
+            , idx
+            )
         )
         |> andMap (Decode.maybe (field "title" Decode.string))
         |> andMap (Decode.maybe (field "description" Decode.string))
@@ -180,19 +179,20 @@ infoDecoder =
         |> andMap (Decode.maybe (field "version" Decode.string))
 
 
-licenseDecoder : Decoder License
+licenseDecoder : Decoder ( License, Index )
 licenseDecoder =
     Decode.succeed
         (\name url ->
             let
                 idx =
-                    Index.fromMaybeString name
-                        |> Index.union (Index.fromMaybeString url)
+                    Index.addMaybeString name
+                        |> Index.addIndex (Index.addMaybeString url)
             in
-            { name = name
-            , url = url
-            , index = idx
-            }
+            ( { name = name
+              , url = url
+              }
+            , idx
+            )
         )
         |> andMap (Decode.maybe (field "name" Decode.string))
         |> andMap (Decode.maybe (field "url" Decode.string))
@@ -217,21 +217,22 @@ componentsDecoder =
         |> andMap (field "schemas" (Decode.dict JsonSchema.decoder))
 
 
-contactDecoder : Decoder Contact
+contactDecoder : Decoder ( Contact, Index )
 contactDecoder =
     Decode.succeed
         (\name url email ->
             let
                 idx =
-                    Index.fromMaybeString name
-                        |> Index.union (Index.fromMaybeString url)
-                        |> Index.union (Index.fromMaybeString email)
+                    Index.addMaybeString name
+                        |> Index.addIndex (Index.addMaybeString url)
+                        |> Index.addIndex (Index.addMaybeString email)
             in
-            { name = name
-            , url = url
-            , email = email
-            , index = idx
-            }
+            ( { name = name
+              , url = url
+              , email = email
+              }
+            , idx
+            )
         )
         |> andMap (Decode.maybe (field "name" Decode.string))
         |> andMap (Decode.maybe (field "url" Decode.string))
@@ -246,20 +247,23 @@ This works by combinind together the 'pathItemPartialDecoder' and the 'httpVerbD
 pathItemDecoder : Decoder PathItem
 pathItemDecoder =
     Decode.map2
-        (\pathItem operations ->
+        (\( pathItem, pathItemIndex ) indexedOperations ->
             let
                 operationIdx =
                     List.foldl
-                        (\( _, op ) accum ->
-                            Index.union op.index accum
+                        (\( _, _, idx ) accum ->
+                            Index.addIndex idx accum
                         )
                         Index.empty
-                        operations
+                        indexedOperations
+
+                operations =
+                    List.map (\( verb, op, _ ) -> ( verb, op )) indexedOperations
             in
             { pathItem
                 | operations = operations
                 , index =
-                    Index.union pathItem.index operationIdx
+                    Index.addIndex pathItemIndex operationIdx
                         |> Index.prepare
             }
         )
@@ -277,24 +281,26 @@ todo: servers : List Server
 todo: parameters : List Parameter
 
 -}
-pathItemPartialDecoder : Decoder PathItem
+pathItemPartialDecoder : Decoder ( PathItem, Index )
 pathItemPartialDecoder =
     Decode.succeed
         (\ref summary description ->
             let
                 idx =
-                    Index.fromMaybeString ref
-                        |> Index.union (Index.fromMaybeString summary)
-                        |> Index.union (Index.fromMaybeString description)
+                    Index.addMaybeString ref
+                        |> Index.addIndex (Index.addMaybeString summary)
+                        |> Index.addIndex (Index.addMaybeString description)
             in
-            { ref = ref
-            , summary = summary
-            , description = description
-            , operations = []
-            , servers = []
-            , parameters = []
-            , index = idx
-            }
+            ( { ref = ref
+              , summary = summary
+              , description = description
+              , operations = []
+              , servers = []
+              , parameters = []
+              , index = Index.empty
+              }
+            , idx
+            )
         )
         |> andMap (Decode.maybe (field "ref" Decode.string))
         |> andMap (Decode.maybe (field "summary" Decode.string))
@@ -307,16 +313,16 @@ The path operations are encoded in the JSON as fields named 'get', 'put', etc.
 These fields are exatracted as a list of `( HttpVerb, Operation )` pairs.
 
 -}
-httpVerbDecoder : Decoder (List ( HttpVerb, Operation ))
+httpVerbDecoder : Decoder (List ( HttpVerb, Operation, Index ))
 httpVerbDecoder =
     let
-        extractOperations : Dict String Operation -> List ( HttpVerb, Operation )
+        extractOperations : Dict String ( Operation, Index ) -> List ( HttpVerb, Operation, Index )
         extractOperations dict =
             Dict.foldl
-                (\verb operation accum ->
+                (\verb ( operation, index ) accum ->
                     case stringToHttpVerb verb of
                         Just httpVerb ->
-                            ( httpVerb, operation ) :: accum
+                            ( httpVerb, operation, index ) :: accum
 
                         Nothing ->
                             accum
@@ -337,45 +343,44 @@ todo: callbacks : Dict String Callback
 todo: security : Dict String (List String)
 
 -}
-operationDecoder : Decoder Operation
+operationDecoder : Decoder ( Operation, Index )
 operationDecoder =
     Decode.succeed
-        (\tags summary description operationId parameters deprecated ->
+        (\tags summary description operationId paramsWithIdxBuilders deprecated ->
             let
+                ( parameters, paramIdxs ) =
+                    List.unzip paramsWithIdxBuilders
+
                 paramIdx =
                     List.foldl
-                        (\param accum ->
-                            case param of
-                                ParameterRef { index } ->
-                                    Index.union index accum
-
-                                ParameterInline { index } ->
-                                    Index.union index accum
+                        (\index accum ->
+                            Index.addIndex index accum
                         )
                         Index.empty
-                        parameters
+                        paramIdxs
 
                 idx =
-                    Index.fromStrings tags
-                        |> Index.union (Index.fromMaybeString summary)
-                        |> Index.union (Index.fromMaybeString description)
-                        |> Index.union (Index.fromMaybeString operationId)
-                        |> Index.union paramIdx
+                    Index.addStrings tags
+                        |> Index.addIndex (Index.addMaybeString summary)
+                        |> Index.addIndex (Index.addMaybeString description)
+                        |> Index.addIndex (Index.addMaybeString operationId)
+                        |> Index.addIndex paramIdx
             in
-            { tags = tags
-            , summary = summary
-            , description = description
-            , externalDocs = Nothing
-            , operationId = operationId
-            , parameters = parameters
-            , requestBody = Nothing
-            , responses = Dict.empty
-            , callbacks = Dict.empty
-            , deprecated = deprecated
-            , security = Dict.empty
-            , servers = []
-            , index = idx
-            }
+            ( { tags = tags
+              , summary = summary
+              , description = description
+              , externalDocs = Nothing
+              , operationId = operationId
+              , parameters = parameters
+              , requestBody = Nothing
+              , responses = Dict.empty
+              , callbacks = Dict.empty
+              , deprecated = deprecated
+              , security = Dict.empty
+              , servers = []
+              }
+            , idx
+            )
         )
         |> andMap (field "tags" (Decode.list Decode.string))
         |> andMap (Decode.maybe (field "summary" Decode.string))
@@ -398,19 +403,20 @@ maybeListDecoder =
         )
 
 
-parameterDecoder : Decoder Parameter
+parameterDecoder : Decoder ( Parameter, Index )
 parameterDecoder =
     Decode.oneOf [ parameterRefDecoder, parameterInlineDecoder ]
 
 
-parameterRefDecoder : Decoder Parameter
+parameterRefDecoder : Decoder ( Parameter, Index )
 parameterRefDecoder =
     Decode.succeed
         (\ref ->
-            ParameterRef
+            ( ParameterRef
                 { ref = ref
-                , index = Index.fromString ref
                 }
+            , Index.addString ref
+            )
         )
         |> andMap (field "ref" Decode.string)
 
@@ -429,10 +435,10 @@ example : Maybe String
 examples : Dict String Example
 content : Dict String MediaType
 -}
-parameterInlineDecoder : Decoder Parameter
+parameterInlineDecoder : Decoder ( Parameter, Index )
 parameterInlineDecoder =
     Decode.succeed <|
-        ParameterInline
+        ( ParameterInline
             { name = Nothing
             , in_ = Nothing
             , description = Nothing
@@ -446,8 +452,9 @@ parameterInlineDecoder =
             , example = Nothing
             , examples = Dict.empty
             , content = Dict.empty
-            , index = Index.empty
             }
+        , Index.empty
+        )
 
 
 schemaDecoder : Decoder Components
