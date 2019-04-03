@@ -10,6 +10,7 @@ import Index.Index as Index exposing (Index)
 import Json.Schema.Definitions
 import Maybe.Extra
 import OpenApi.Model as OpenApi
+import Responsive exposing (ResponsiveStyle)
 import State exposing (Model, Msg(..), ViewState(..))
 import Structure exposing (Template(..))
 import Styles exposing (lg, md, sm, xl)
@@ -23,7 +24,7 @@ view =
             []
             [ case model.state of
                 Loaded api ->
-                    endpointsView model.searchTerm api
+                    endpointsView devices model.searchTerm api
 
                 _ ->
                     div [] []
@@ -84,23 +85,23 @@ uncurry fn =
     \( fst, snd ) -> fn fst snd
 
 
-endpointsView : Maybe String -> OpenApi.OpenApi -> Html.Styled.Html Msg
-endpointsView maybeSearch spec =
+endpointsView : ResponsiveStyle -> Maybe String -> OpenApi.OpenApi -> Html.Styled.Html Msg
+endpointsView devices maybeSearch spec =
     div
         []
-        [ pathsView maybeSearch spec
+        [ pathsView devices maybeSearch spec
         ]
 
 
-pathsView : Maybe String -> OpenApi.OpenApi -> Html.Styled.Html Msg
-pathsView maybeSearch spec =
+pathsView : ResponsiveStyle -> Maybe String -> OpenApi.OpenApi -> Html.Styled.Html Msg
+pathsView devices maybeSearch spec =
     div
         []
-        (List.map (uncurry (pathView maybeSearch)) (Dict.toList spec.paths))
+        (List.map (uncurry (pathView devices maybeSearch)) (Dict.toList spec.paths))
 
 
-pathView : Maybe String -> String -> OpenApi.PathItem -> Html.Styled.Html Msg
-pathView maybeSearch url path =
+pathView : ResponsiveStyle -> Maybe String -> String -> OpenApi.PathItem -> Html.Styled.Html Msg
+pathView devices maybeSearch url path =
     let
         matches =
             case maybeSearch of
@@ -111,10 +112,15 @@ pathView maybeSearch url path =
                     Index.search path.index term
     in
     if matches then
-        div []
+        styled div
+            [ Responsive.deviceStyle devices
+                (\device -> Css.marginBottom <| Css.px (Responsive.rhythm 1.0 device))
+            ]
+            []
             [ text url
             , styled div
-                [ Css.paddingLeft <| Css.px 10 ]
+                [ Css.paddingLeft <| Css.px 10
+                ]
                 []
                 (Maybe.Extra.values
                     [ optionalTextField "ref" .ref path
