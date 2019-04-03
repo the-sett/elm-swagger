@@ -202,6 +202,16 @@ componentsDecoder : Decoder Components
 componentsDecoder =
     Decode.succeed
         (\schemas ->
+            let
+                idx =
+                    Dict.foldl
+                        (\key _ accum ->
+                            Index.addString key
+                                |> Index.addIndex accum
+                        )
+                        Index.empty
+                        schemas
+            in
             { schemas = schemas
             , parameters = Dict.empty
             , requestBodies = Dict.empty
@@ -211,7 +221,7 @@ componentsDecoder =
             , links = Dict.empty
             , callbacks = Dict.empty
             , securitySchemes = Dict.empty
-            , index = Index.empty
+            , index = idx
             }
         )
         |> andMap (field "schemas" (Decode.dict JsonSchema.decoder))
