@@ -494,7 +494,7 @@ schemaInlineDecoder =
                 }
          --, index = Index.empty
         )
-        |> andMap (field "schema" JsonSchema.decoder)
+        |> andMap JsonSchema.decoder
 
 
 referenceDecoder : Decoder Reference
