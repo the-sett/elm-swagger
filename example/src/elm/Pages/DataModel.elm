@@ -101,7 +101,7 @@ componentsView maybeSearch components =
         (List.map (uncurry (schemaView maybeSearch)) (Dict.toList components.schemas))
 
 
-schemaView : Maybe String -> String -> Json.Schema.Definitions.Schema -> Html.Styled.Html Msg
+schemaView : Maybe String -> String -> OpenApi.Schema -> Html.Styled.Html Msg
 schemaView maybeSearch name schema =
     let
         matches =
@@ -113,20 +113,25 @@ schemaView maybeSearch name schema =
                     String.contains (String.toLower term) (String.toLower name)
     in
     if matches then
-        div []
-            [ text name
-            , styled div
-                [ Css.paddingLeft <| Css.px 10
-                , Css.fontSize <| Css.px 14
-                ]
-                []
-                [ pre []
-                    [ Json.Schema.Definitions.encode schema
-                        |> Json.Encode.encode 4
-                        |> text
+        case schema of
+            OpenApi.SchemaRef _ ->
+                div [] [ text "$ref" ]
+
+            OpenApi.SchemaInline inlineSchema ->
+                div []
+                    [ text name
+                    , styled div
+                        [ Css.paddingLeft <| Css.px 10
+                        , Css.fontSize <| Css.px 14
+                        ]
+                        []
+                        [ pre []
+                            [ Json.Schema.Definitions.encode inlineSchema.schema
+                                |> Json.Encode.encode 4
+                                |> text
+                            ]
+                        ]
                     ]
-                ]
-            ]
 
     else
         div [] []

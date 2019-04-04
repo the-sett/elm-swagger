@@ -57,7 +57,7 @@ import OpenApi.Model
         , Reference
         , RequestBody(..)
         , Response(..)
-        , Schema
+        , Schema(..)
         , SecurityRequirement
         , SecurityScheme(..)
         , SecurityTokenIn(..)
@@ -224,7 +224,7 @@ componentsDecoder =
             , index = idx
             }
         )
-        |> andMap (field "schemas" (Decode.dict JsonSchema.decoder))
+        |> andMap (field "schemas" (Decode.dict schemaDecoder))
 
 
 contactDecoder : Decoder ( Contact, Index )
@@ -467,20 +467,38 @@ parameterInlineDecoder =
         )
 
 
-schemaDecoder : Decoder Components
+schemaDecoder : Decoder Schema
 schemaDecoder =
+    Decode.oneOf [ schemaRefDecoder, schemaInlineDecoder ]
+
+
+schemaRefDecoder : Decoder Schema
+schemaRefDecoder =
+    Decode.map SchemaRef referenceDecoder
+
+
+schemaInlineDecoder : Decoder Schema
+schemaInlineDecoder =
     Decode.succeed
-        (\schemas ->
-            { schemas = schemas
-            , parameters = Dict.empty
-            , requestBodies = Dict.empty
-            , responses = Dict.empty
-            , examples = Dict.empty
-            , headers = Dict.empty
-            , links = Dict.empty
-            , callbacks = Dict.empty
-            , securitySchemes = Dict.empty
-            , index = Index.empty
-            }
+        (\schema ->
+            SchemaInline
+                { schema = schema
+                , nullable = Nothing
+                , discriminator = Nothing
+                , readOnly = Nothing
+                , writeOnly = Nothing
+                , xml = Nothing
+                , externalDocs = Nothing
+                , example = Nothing
+                , deprecated = Nothing
+                }
+         --, index = Index.empty
         )
-        |> andMap (field "schemas" (Decode.dict JsonSchema.decoder))
+        |> andMap (field "schema" JsonSchema.decoder)
+
+
+referenceDecoder : Decoder Reference
+referenceDecoder =
+    Decode.succeed
+        (\ref -> { ref = ref })
+        |> andMap (field "ref" Decode.string)

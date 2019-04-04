@@ -23,7 +23,7 @@ module OpenApi.Model exposing
     , Reference
     , RequestBody(..)
     , Response(..)
-    , Schema
+    , Schema(..)
     , SecurityRequirement
     , SecurityScheme(..)
     , SecurityTokenIn(..)
@@ -348,27 +348,19 @@ type Response
         }
 
 
-{-| See below; the JSON schema type needs to be extended for OpenAPI.
-Will start by using a plain JSON schema for now.
--}
-type alias Schema =
-    JsonSchema.Schema
-
-
-
--- type Schema
---     = SchemaRef Reference
---     | SchemaInline
---         { schema : JsonSchema.Schema
---         , nullable : Maybe Bool
---         , discriminator : Maybe Discriminator
---         , readOnly : Maybe Bool
---         , writeOnly : Maybe Bool
---         , xml : Maybe Xml
---         , externalDocs : Maybe ExternalDocs
---         , example : Maybe Value
---         , deprecated : Maybe Bool
---         }
+type Schema
+    = SchemaRef Reference
+    | SchemaInline
+        { schema : JsonSchema.Schema
+        , nullable : Maybe Bool
+        , discriminator : Maybe Discriminator
+        , readOnly : Maybe Bool
+        , writeOnly : Maybe Bool
+        , xml : Maybe Xml
+        , externalDocs : Maybe ExternalDocs
+        , example : Maybe Value
+        , deprecated : Maybe Bool
+        }
 
 
 type alias SecurityRequirement =
