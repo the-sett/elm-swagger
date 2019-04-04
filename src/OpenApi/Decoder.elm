@@ -501,4 +501,4 @@ referenceDecoder : Decoder Reference
 referenceDecoder =
     Decode.succeed
         (\ref -> { ref = ref })
-        |> andMap (field "ref" Decode.string)
+        |> andMap (field "$ref" Decode.string)
