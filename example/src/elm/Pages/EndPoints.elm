@@ -3,13 +3,15 @@ module Pages.EndPoints exposing (view)
 import Css
 import Dict
 import Grid
-import Html.Styled exposing (div, h1, h4, p, styled, text)
+import Html.Styled exposing (div, h1, h4, p, span, styled, text)
 import Html.Styled.Attributes exposing (id)
 import Html.Styled.Lazy exposing (lazy2)
 import Index.Index as Index exposing (Index)
 import Json.Schema.Definitions
+import List.Extra
 import Maybe.Extra
 import OpenApi.Model as OpenApi
+import Regex
 import Responsive exposing (ResponsiveStyle)
 import State exposing (Model, Msg(..), ViewState(..))
 import Structure exposing (Template(..))
@@ -38,8 +40,8 @@ view =
 -- View for the OpenAPI Spec
 
 
-optionalTextField : String -> (a -> Maybe String) -> a -> Maybe (Html.Styled.Html Msg)
-optionalTextField label exFn rec =
+optionalTextField : Maybe String -> String -> (a -> Maybe String) -> a -> Maybe (Html.Styled.Html Msg)
+optionalTextField maybeSearch label exFn rec =
     let
         maybeVal =
             exFn rec
@@ -51,7 +53,7 @@ optionalTextField label exFn rec =
         Just val ->
             Just <|
                 div []
-                    [ text <| label ++ ": " ++ val
+                    [ highlight maybeSearch <| label ++ ": " ++ val
                     ]
 
 
@@ -123,32 +125,32 @@ pathView devices maybeSearch url path =
                 ]
                 []
                 (Maybe.Extra.values
-                    [ optionalTextField "ref" .ref path
-                    , optionalTextField "summary" .summary path
-                    , optionalTextField "description" .description path
+                    [ optionalTextField maybeSearch "ref" .ref path
+                    , optionalTextField maybeSearch "summary" .summary path
+                    , optionalTextField maybeSearch "description" .description path
                     ]
                 )
             , styled div
                 [ Css.paddingLeft <| Css.px 10 ]
                 []
-                (List.map (uncurry operationView) path.operations)
+                (List.map (uncurry (operationView maybeSearch)) path.operations)
             ]
 
     else
         div [] []
 
 
-operationView : OpenApi.HttpVerb -> OpenApi.Operation -> Html.Styled.Html Msg
-operationView verb op =
+operationView : Maybe String -> OpenApi.HttpVerb -> OpenApi.Operation -> Html.Styled.Html Msg
+operationView maybeSearch verb op =
     div []
         [ text <| OpenApi.httpVerbToString verb
         , styled div
             [ Css.paddingLeft <| Css.px 10 ]
             []
             (Maybe.Extra.values
-                [ optionalTextField "summary" .summary op
-                , optionalTextField "description" .description op
-                , optionalTextField "operationId" .operationId op
+                [ optionalTextField maybeSearch "summary" .summary op
+                , optionalTextField maybeSearch "description" .description op
+                , optionalTextField maybeSearch "operationId" .operationId op
                 , optionalFlagField "deprecated" .deprecated op
                 ]
             )
@@ -161,3 +163,35 @@ operationView verb op =
                 |> text
             ]
         ]
+
+
+highlight : Maybe String -> String -> Html.Styled.Html msg
+highlight maybeSearch val =
+    case maybeSearch of
+        Nothing ->
+            text val
+
+        Just search ->
+            let
+                attribute =
+                    Css.backgroundColor <| Css.rgb 65 219 119
+
+                regex =
+                    toRegex search
+
+                matches =
+                    Regex.find regex val |> List.map (\match -> styled span [ attribute ] [] [ text match.match ])
+
+                rest =
+                    Regex.split regex val |> List.map text
+            in
+            span [] (List.Extra.interweave rest matches)
+
+
+toRegex : String -> Regex.Regex
+toRegex string =
+    if string == "" then
+        Regex.never
+
+    else
+        Regex.fromStringWith { caseInsensitive = True, multiline = False } string |> Maybe.withDefault Regex.never
