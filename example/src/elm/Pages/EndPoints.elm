@@ -17,6 +17,7 @@ import State exposing (Model, Msg(..), ViewState(..))
 import Structure exposing (Template(..))
 import Styles exposing (lg, md, sm, xl)
 import TheSett.Buttons as Buttons
+import ViewUtils exposing (highlight, optionalFlagField, optionalTextField, uncurry)
 
 
 view : Template Msg Model
@@ -38,53 +39,6 @@ view =
 
 
 -- View for the OpenAPI Spec
-
-
-optionalTextField : Maybe String -> String -> (a -> Maybe String) -> a -> Maybe (Html.Styled.Html Msg)
-optionalTextField maybeSearch label exFn rec =
-    let
-        maybeVal =
-            exFn rec
-    in
-    case maybeVal of
-        Nothing ->
-            Nothing
-
-        Just val ->
-            Just <|
-                div []
-                    [ highlight maybeSearch <| label ++ ": " ++ val
-                    ]
-
-
-optionalFlagField : String -> (a -> Maybe Bool) -> a -> Maybe (Html.Styled.Html Msg)
-optionalFlagField label exFn rec =
-    let
-        maybeVal =
-            exFn rec
-    in
-    case maybeVal of
-        Nothing ->
-            Nothing
-
-        Just val ->
-            Just <|
-                div []
-                    [ text <|
-                        label
-                            ++ ": "
-                            ++ (if val then
-                                    "true"
-
-                                else
-                                    "false"
-                               )
-                    ]
-
-
-uncurry : (a -> b -> c) -> ( a, b ) -> c
-uncurry fn =
-    \( fst, snd ) -> fn fst snd
 
 
 endpointsView : ResponsiveStyle -> Maybe String -> OpenApi.OpenApi -> Html.Styled.Html Msg
@@ -163,35 +117,3 @@ operationView maybeSearch verb op =
                 |> text
             ]
         ]
-
-
-highlight : Maybe String -> String -> Html.Styled.Html msg
-highlight maybeSearch val =
-    case maybeSearch of
-        Nothing ->
-            text val
-
-        Just search ->
-            let
-                attribute =
-                    Css.backgroundColor <| Css.rgb 65 219 119
-
-                regex =
-                    toRegex search
-
-                matches =
-                    Regex.find regex val |> List.map (\match -> styled span [ attribute ] [] [ text match.match ])
-
-                rest =
-                    Regex.split regex val |> List.map text
-            in
-            span [] (List.Extra.interweave rest matches)
-
-
-toRegex : String -> Regex.Regex
-toRegex string =
-    if string == "" then
-        Regex.never
-
-    else
-        Regex.fromStringWith { caseInsensitive = True, multiline = False } string |> Maybe.withDefault Regex.never

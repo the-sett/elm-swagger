@@ -11,6 +11,7 @@ import Maybe.Extra
 import OpenApi.Model as OpenApi
 import State exposing (Model, Msg(..), ViewState(..))
 import Structure exposing (Template(..))
+import ViewUtils exposing (highlight, optionalFlagField, optionalTextField, uncurry)
 
 
 view : Template Msg Model
@@ -32,53 +33,6 @@ view =
 
 
 -- View for the OpenAPI Spec
-
-
-optionalTextField : String -> (a -> Maybe String) -> a -> Maybe (Html.Styled.Html Msg)
-optionalTextField label exFn rec =
-    let
-        maybeVal =
-            exFn rec
-    in
-    case maybeVal of
-        Nothing ->
-            Nothing
-
-        Just val ->
-            Just <|
-                div []
-                    [ text <| label ++ ": " ++ val
-                    ]
-
-
-optionalFlagField : String -> (a -> Maybe Bool) -> a -> Maybe (Html.Styled.Html Msg)
-optionalFlagField label exFn rec =
-    let
-        maybeVal =
-            exFn rec
-    in
-    case maybeVal of
-        Nothing ->
-            Nothing
-
-        Just val ->
-            Just <|
-                div []
-                    [ text <|
-                        label
-                            ++ ": "
-                            ++ (if val then
-                                    "true"
-
-                                else
-                                    "false"
-                               )
-                    ]
-
-
-uncurry : (a -> b -> c) -> ( a, b ) -> c
-uncurry fn =
-    \( fst, snd ) -> fn fst snd
 
 
 dataModelView : Maybe String -> OpenApi.OpenApi -> Html.Styled.Html Msg
