@@ -73,7 +73,7 @@ schemaView maybeSearch name schema =
 
             OpenApi.SchemaInline inlineSchema ->
                 div []
-                    [ text name
+                    [ highlight maybeSearch name
                     , styled div
                         [ Css.paddingLeft <| Css.px 10
                         , Css.fontSize <| Css.px 14
