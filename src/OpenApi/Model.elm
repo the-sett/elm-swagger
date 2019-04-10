@@ -52,28 +52,28 @@ httpVerbToString : HttpVerb -> String
 httpVerbToString verb =
     case verb of
         Get ->
-            "get"
+            "GET"
 
         Put ->
-            "put"
+            "PUT"
 
         Post ->
-            "post"
+            "POST"
 
         Delete ->
-            "delete"
+            "DELETE"
 
         Options ->
-            "options"
+            "OPTIONS"
 
         Head ->
-            "head"
+            "HEAD"
 
         Patch ->
-            "patch"
+            "PATCH"
 
         Trace ->
-            "trace"
+            "TRACE"
 
 
 stringToHttpVerb : String -> Maybe HttpVerb
