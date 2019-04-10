@@ -6,6 +6,7 @@ import Browser.Dom exposing (getViewportOf, setViewportOf)
 import Colors
 import Css
 import Css.Global
+import Devices
 import Html.Styled exposing (div, input, text, toUnstyled)
 import Html.Styled.Attributes exposing (checked, type_)
 import Html.Styled.Events exposing (onCheck)
@@ -141,6 +142,10 @@ getApiSpec url =
 -- View
 
 
+deviceConfig =
+    Devices.devices
+
+
 global : List Css.Global.Snippet
 global =
     [ Css.Global.each
@@ -170,22 +175,22 @@ styledView model =
                 layout <| Body.view template
             of
                 Dynamic fn ->
-                    fn Laf.devices model
+                    fn deviceConfig model
 
                 Static fn ->
-                    Html.Styled.map never <| fn Laf.devices
+                    Html.Styled.map never <| fn deviceConfig
 
         innerView =
             [ Laf.responsiveMeta
             , Laf.fonts
-            , Laf.style Laf.devices
+            , Laf.style deviceConfig
             , Css.Global.global global
             , pageView
             ]
 
         debugStyle =
             Css.Global.global <|
-                TheSett.Debug.global Laf.devices
+                TheSett.Debug.global deviceConfig
     in
     case model.debug of
         True ->
