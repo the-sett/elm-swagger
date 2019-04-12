@@ -85,6 +85,7 @@ schemaView devices maybeSearch name schema =
                         )
                     , Css.borderRadius (Css.px 4)
                     , Css.backgroundColor Colors.paperWhite
+                    , Css.overflow Css.auto
                     ]
                     []
                     [ highlight maybeSearch name
