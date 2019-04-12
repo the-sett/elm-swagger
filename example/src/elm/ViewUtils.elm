@@ -1,5 +1,6 @@
 module ViewUtils exposing (highlight, optionalFlagField, optionalTextField, uncurry)
 
+import Colors
 import Css
 import Html.Styled exposing (div, span, styled, text)
 import List.Extra
@@ -62,7 +63,7 @@ highlight maybeSearch val =
         Just search ->
             let
                 attribute =
-                    Css.backgroundColor <| Css.rgb 65 219 119
+                    Css.backgroundColor <| Colors.highlight
 
                 regex =
                     toRegex search

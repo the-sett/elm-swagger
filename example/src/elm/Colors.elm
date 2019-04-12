@@ -1,4 +1,4 @@
-module Colors exposing (paperWhite, softGrey)
+module Colors exposing (highlight, midGrey, paperWhite, softGrey)
 
 import Css
 
@@ -9,3 +9,11 @@ paperWhite =
 
 softGrey =
     Css.rgb 225 212 214
+
+
+midGrey =
+    Css.rgb 168 159 160
+
+
+highlight =
+    Css.rgb 65 219 119

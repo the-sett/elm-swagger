@@ -1,5 +1,6 @@
 module Pages.EndPoints exposing (view)
 
+import Colors
 import Css
 import Dict
 import Grid
@@ -68,42 +69,41 @@ pathView devices maybeSearch url path =
                     Index.search path.index term
     in
     if matches then
-        styled div
-            [ Responsive.deviceStyle devices
-                (\device -> Css.marginBottom <| Css.px (Responsive.rhythm 1.0 device))
-            ]
+        div
             []
-            [ text url
-            , styled div
-                [ Css.paddingLeft <| Css.px 10
-                ]
-                []
-                (Maybe.Extra.values
-                    [ optionalTextField maybeSearch "ref" .ref path
-                    , optionalTextField maybeSearch "summary" .summary path
-                    , optionalTextField maybeSearch "description" .description path
-                    ]
-                )
-            , styled div
+            [ styled div
                 [ Css.paddingLeft <| Css.px 10 ]
                 []
-                (List.map (uncurry (operationView maybeSearch)) path.operations)
+                (List.map (uncurry (operationView devices maybeSearch url path)) path.operations)
             ]
 
     else
         div [] []
 
 
-operationView : Maybe String -> OpenApi.HttpVerb -> OpenApi.Operation -> Html.Styled.Html Msg
-operationView maybeSearch verb op =
-    div []
+operationView : ResponsiveStyle -> Maybe String -> String -> OpenApi.PathItem -> OpenApi.HttpVerb -> OpenApi.Operation -> Html.Styled.Html Msg
+operationView devices maybeSearch url path verb op =
+    styled div
+        [ Responsive.deviceStyles devices
+            (\device ->
+                [ Css.marginBottom <| Css.px (Responsive.rhythm 0.5 device)
+                , Css.marginTop <| Css.px (Responsive.rhythm 0.5 device)
+                , Css.padding <| Css.px (Responsive.rhythm 0.5 device)
+                , Css.border3 (Css.px 1) Css.solid Colors.midGrey
+                ]
+            )
+        , Css.borderRadius (Css.px 4)
+        , Css.backgroundColor Colors.paperWhite
+        ]
+        []
         [ text <| OpenApi.httpVerbToString verb
+        , text url
+        , op.summary |> Maybe.withDefault "" |> highlight maybeSearch
         , styled div
             [ Css.paddingLeft <| Css.px 10 ]
             []
             (Maybe.Extra.values
-                [ optionalTextField maybeSearch "summary" .summary op
-                , optionalTextField maybeSearch "description" .description op
+                [ optionalTextField maybeSearch "description" .description op
                 , optionalTextField maybeSearch "operationId" .operationId op
                 , optionalFlagField "deprecated" .deprecated op
                 ]
