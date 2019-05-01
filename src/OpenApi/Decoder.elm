@@ -470,7 +470,7 @@ parameterInlineDecoder =
                 , examples = Dict.empty
                 , content = Dict.empty
                 }
-            , Index.empty
+            , idx
             )
         )
         |> andMap (Decode.maybe (field "name" Decode.string))
