@@ -290,8 +290,6 @@ type Parameter
     | ParameterInline
         { name : Maybe String
         , in_ : Maybe ParamIn
-
-        -- Same as Header from here on - merge the two?
         , description : Maybe String
         , required : Maybe Bool
         , deprecated : Maybe Bool

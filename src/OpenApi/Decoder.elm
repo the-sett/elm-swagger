@@ -201,7 +201,7 @@ licenseDecoder =
 componentsDecoder : Decoder Components
 componentsDecoder =
     Decode.succeed
-        (\schemas ->
+        (\schemas parameters requestBodies responses ->
             let
                 idx =
                     Dict.foldl
@@ -225,6 +225,9 @@ componentsDecoder =
             }
         )
         |> andMap (field "schemas" (Decode.dict schemaDecoder))
+        |> andMap (field "parameters" (Decode.dict parameterDecoder))
+        |> andMap (field "requestBodies" (Decode.dict requestBodyDecoder))
+        |> andMap (field "responses" (Decode.dict responseDecoder))
 
 
 contactDecoder : Decoder ( Contact, Index )
@@ -251,7 +254,7 @@ contactDecoder =
 
 {-| Decodes URL paths.
 
-This works by combinind together the 'pathItemPartialDecoder' and the 'httpVerbDecoder'.
+This works by combining together the 'pathItemPartialDecoder' and the 'httpVerbDecoder'.
 
 -}
 pathItemDecoder : Decoder PathItem
@@ -392,7 +395,7 @@ operationDecoder =
             , idx
             )
         )
-        |> andMap (field "tags" (Decode.list Decode.string))
+        |> andMap (maybeListDecoder (Decode.maybe (field "tags" (Decode.list Decode.string))))
         |> andMap (Decode.maybe (field "summary" Decode.string))
         |> andMap (Decode.maybe (field "description" Decode.string))
         |> andMap (Decode.maybe (field "operationId" Decode.string))
@@ -432,8 +435,6 @@ parameterRefDecoder =
 
 
 {-| todo:
-name : Maybe String
-description : Maybe String
 required : Maybe Bool
 deprecated : Maybe Bool
 allowEmptyValue : Maybe Bool
@@ -441,30 +442,101 @@ style : Maybe Style
 explode : Maybe Bool
 allowReserved : Maybe Bool
 schema : Maybe Schema
-example : Maybe String
 examples : Dict String Example
 content : Dict String MediaType
 -}
 parameterInlineDecoder : Decoder ( Parameter, Index )
 parameterInlineDecoder =
-    Decode.succeed <|
-        ( ParameterInline
-            { name = Nothing
-            , in_ = Nothing
-            , description = Nothing
-            , required = Nothing
-            , deprecated = Nothing
-            , allowEmptyValue = Nothing
-            , style = Nothing
-            , explode = Nothing
-            , allowReserved = Nothing
-            , schema = Nothing
-            , example = Nothing
-            , examples = Dict.empty
-            , content = Dict.empty
-            }
-        , Index.empty
+    Decode.succeed
+        (\name description example ->
+            ( ParameterInline
+                { name = name
+                , in_ = Nothing
+                , description = description
+                , required = Nothing
+                , deprecated = Nothing
+                , allowEmptyValue = Nothing
+                , style = Nothing
+                , explode = Nothing
+                , allowReserved = Nothing
+                , schema = Nothing
+                , example = example
+                , examples = Dict.empty
+                , content = Dict.empty
+                }
+            , Index.empty
+            )
         )
+        |> andMap (Decode.maybe (field "name" Decode.string))
+        |> andMap (Decode.maybe (field "description" Decode.string))
+        |> andMap (Decode.maybe (field "example" Decode.string))
+
+
+requestBodyDecoder : Decoder ( RequestBody, Index )
+requestBodyDecoder =
+    Decode.oneOf [ requestBodyRefDecoder, requestBodyInlineDecoder ]
+
+
+requestBodyRefDecoder : Decoder ( RequestBody, Index )
+requestBodyRefDecoder =
+    Decode.succeed
+        (\ref ->
+            ( RequestBodyRef
+                { ref = ref
+                }
+            , Index.addString ref
+            )
+        )
+        |> andMap (field "ref" Decode.string)
+
+
+requestBodyInlineDecoder : Decoder ( RequestBody, Index )
+requestBodyInlineDecoder =
+    Decode.succeed
+        (\description ->
+            ( RequestBodyInline
+                { description = description
+                , content = Dict.empty
+                , required = Nothing
+                }
+            , Index.empty
+            )
+        )
+        |> andMap (Decode.maybe (field "description" Decode.string))
+
+
+responseDecoder : Decoder ( Response, Index )
+responseDecoder =
+    Decode.oneOf [ responseRefDecoder, responseInlineDecoder ]
+
+
+responseRefDecoder : Decoder ( Response, Index )
+responseRefDecoder =
+    Decode.succeed
+        (\ref ->
+            ( ResponseRef
+                { ref = ref
+                }
+            , Index.addString ref
+            )
+        )
+        |> andMap (field "ref" Decode.string)
+
+
+responseInlineDecoder : Decoder ( Response, Index )
+responseInlineDecoder =
+    Decode.succeed
+        (\description ->
+            ( ResponseInline
+                { description = description
+                , header = Dict.empty
+                , content = Dict.empty
+                , links = Dict.empty
+                }
+            , Index.empty
+            )
+        )
+        |> andMap (Decode.maybe (field "description" Decode.string))
 
 
 schemaDecoder : Decoder Schema
