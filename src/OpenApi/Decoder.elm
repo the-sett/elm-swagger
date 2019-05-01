@@ -449,6 +449,12 @@ parameterInlineDecoder : Decoder ( Parameter, Index )
 parameterInlineDecoder =
     Decode.succeed
         (\name description example ->
+            let
+                idx =
+                    Index.addMaybeString name
+                        |> Index.addIndex (Index.addMaybeString description)
+                        |> Index.addIndex (Index.addMaybeString example)
+            in
             ( ParameterInline
                 { name = name
                 , in_ = Nothing
