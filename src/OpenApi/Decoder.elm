@@ -315,7 +315,7 @@ pathItemPartialDecoder =
             , idx
             )
         )
-        |> andMap (Decode.maybe (field "ref" Decode.string))
+        |> andMap (Decode.maybe (field "$ref" Decode.string))
         |> andMap (Decode.maybe (field "summary" Decode.string))
         |> andMap (Decode.maybe (field "description" Decode.string))
 
@@ -431,7 +431,7 @@ parameterRefDecoder =
             , Index.addString ref
             )
         )
-        |> andMap (field "ref" Decode.string)
+        |> andMap (field "$ref" Decode.string)
 
 
 {-| todo:
@@ -487,7 +487,7 @@ requestBodyRefDecoder =
             , Index.addString ref
             )
         )
-        |> andMap (field "ref" Decode.string)
+        |> andMap (field "$ref" Decode.string)
 
 
 requestBodyInlineDecoder : Decoder ( RequestBody, Index )
@@ -520,7 +520,7 @@ responseRefDecoder =
             , Index.addString ref
             )
         )
-        |> andMap (field "ref" Decode.string)
+        |> andMap (field "$ref" Decode.string)
 
 
 responseInlineDecoder : Decoder ( Response, Index )
