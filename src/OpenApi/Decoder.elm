@@ -392,7 +392,7 @@ operationDecoder =
             , idx
             )
         )
-        |> andMap (field "tags" (Decode.list Decode.string))
+        |> andMap (maybeListDecoder (Decode.maybe (field "tags" (Decode.list Decode.string))))
         |> andMap (Decode.maybe (field "summary" Decode.string))
         |> andMap (Decode.maybe (field "description" Decode.string))
         |> andMap (Decode.maybe (field "operationId" Decode.string))
